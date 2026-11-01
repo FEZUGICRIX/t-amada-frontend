@@ -1,11 +1,12 @@
+import AppHeader from './layout/AppHeader'
 import styles from './App.module.css'
 
 function App() {
   return (
-    <main className={styles.root}>
-      <h1>Т-Путешествия</h1>
-      <p>Frontend проекта запущен.</p>
-    </main>
+    <div className={styles.app}>
+      <AppHeader />
+      <main className={styles.main} />
+    </div>
   )
 }
 
