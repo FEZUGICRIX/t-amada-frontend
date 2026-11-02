@@ -11,6 +11,12 @@
 
 @media (max-width: 1023px) {
   .main {
-    width: calc(100% - 40px);
+    width: calc(100% - 64px);
+  }
+}
+
+@media (max-width: 767px) {
+  .main {
+    width: calc(100% - 36px);
   }
 }
