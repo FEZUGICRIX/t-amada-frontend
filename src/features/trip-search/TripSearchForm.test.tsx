@@ -123,4 +123,73 @@ describe('TripSearchForm', () => {
       screen.queryByRole('dialog', { name: 'Выбор даты' }),
     ).toBeInTheDocument()
   })
+  it('opens the passenger selector and closes the calendar', () => {
+    render(<TripSearchForm />)
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /Когда/ }),
+    )
+
+    expect(
+      screen.getByRole('dialog', { name: 'Выбор даты' }),
+    ).toBeInTheDocument()
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Пассажиры и класс/,
+      }),
+    )
+
+    expect(
+      screen.queryByRole('dialog', { name: 'Выбор даты' }),
+    ).not.toBeInTheDocument()
+
+    expect(
+      screen.getByRole('dialog', {
+        name: 'Выбор пассажиров и класса',
+      }),
+    ).toBeInTheDocument()
+  })
+  it('updates the passenger summary', () => {
+    render(<TripSearchForm />)
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Пассажиры и класс/,
+      }),
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Увеличить количество взрослых',
+      }),
+    )
+
+    expect(
+      screen.getByRole('button', {
+        name: /3 пассажира, эконом/,
+      }),
+    ).toBeInTheDocument()
+  })
+  it('updates the class in the passenger summary', () => {
+    render(<TripSearchForm />)
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: /Пассажиры и класс/,
+      }),
+    )
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Бизнес',
+      }),
+    )
+
+    expect(
+      screen.getByRole('button', {
+        name: /2 пассажира, бизнес/,
+      }),
+    ).toBeInTheDocument()
+  })
 })

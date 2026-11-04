@@ -1,6 +1,9 @@
 import { useState, type SubmitEvent } from 'react'
 import DatePicker, { type SelectionMode } from './DatePicker'
 import styles from './TripSearchForm.module.css'
+import PassengerSelector, {
+  type PassengerSelection,
+} from './PassengerSelector'
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
@@ -11,13 +14,46 @@ function formatDate(date: Date | null) {
   return date ? dateFormatter.format(date) : 'Выберите дату'
 }
 
+function formatPassengerSummary(
+  passengers: PassengerSelection,
+) {
+  const total =
+    passengers.adults +
+    passengers.children +
+    passengers.infants
+
+  let passengerWord = 'пассажиров'
+
+  if (total === 1) {
+    passengerWord = 'пассажир'
+  } else if (total >= 2 && total <= 4) {
+    passengerWord = 'пассажира'
+  }
+
+  const className =
+    passengers.travelClass === 'economy'
+      ? 'эконом'
+      : 'бизнес'
+
+  return `${total} ${passengerWord}, ${className}`
+}
+
+type ActivePanel = 'calendar' | 'passengers' | null
+
 function TripSearchForm() {
   const [isOneWay, setIsOneWay] = useState(false)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
+  const [activePanel, setActivePanel] = useState<ActivePanel>(null)
   const [selectionMode, setSelectionMode] =
     useState<SelectionMode>('departure')
   const [departureDate, setDepartureDate] = useState<Date | null>(null)
   const [returnDate, setReturnDate] = useState<Date | null>(null)
+  const [passengers, setPassengers] =
+    useState<PassengerSelection>({
+      adults: 2,
+      children: 0,
+      infants: 0,
+      travelClass: 'economy',
+    })
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
@@ -25,12 +61,12 @@ function TripSearchForm() {
 
   function openDepartureCalendar() {
     setSelectionMode('departure')
-    setIsCalendarOpen(true)
+    setActivePanel('calendar')
   }
 
   function openReturnCalendar() {
     setSelectionMode(departureDate ? 'return' : 'departure')
-    setIsCalendarOpen(true)
+    setActivePanel('calendar')
   }
 
   function handleDateSelect(date: Date) {
@@ -74,9 +110,8 @@ function TripSearchForm() {
 
       <form className={styles.form} onSubmit={handleSubmit}>
         <div
-          className={`${styles.fields} ${
-            isOneWay ? styles.oneWayFields : ''
-          }`}
+          className={`${styles.fields} ${isOneWay ? styles.oneWayFields : ''
+            }`}
         >
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Откуда</span>
@@ -123,12 +158,13 @@ function TripSearchForm() {
           <button
             className={`${styles.field} ${styles.passengersField}`}
             type="button"
+            onClick={() => setActivePanel('passengers')}
           >
             <span className={styles.fieldLabel}>
               Пассажиры и класс
             </span>
             <span className={styles.fieldValue}>
-              2 пассажира, эконом
+              {formatPassengerSummary(passengers)}
             </span>
           </button>
 
@@ -150,12 +186,19 @@ function TripSearchForm() {
         </label>
       </form>
 
-      {isCalendarOpen && (
+      {activePanel === 'calendar' && (
         <DatePicker
           departureDate={departureDate}
           returnDate={returnDate}
           selectionMode={selectionMode}
           onSelect={handleDateSelect}
+        />
+      )}
+
+      {activePanel === 'passengers' && (
+        <PassengerSelector
+          value={passengers}
+          onChange={setPassengers}
         />
       )}
     </section>

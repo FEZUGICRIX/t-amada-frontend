@@ -1,0 +1,132 @@
+.panel {
+    width: 330px;
+    margin: 12px 0 0 auto;
+    overflow: hidden;
+    border: 1px solid #e3e5e8;
+    border-radius: 14px;
+    background-color: var(--color-background-primary);
+    box-shadow: 0 8px 24px rgb(17 17 17 / 8%);
+}
+
+.row {
+    display: flex;
+    min-height: 58px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e3e5e8;
+}
+
+.info {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+}
+
+.hint {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.counter {
+    display: grid;
+    flex: 0 0 auto;
+    grid-template-columns: 32px 24px 32px;
+    align-items: center;
+    gap: 4px;
+}
+
+.counterButton {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid #e3e5e8;
+    border-radius: 50%;
+    color: var(--color-text-primary);
+    background-color: #f5f6f7;
+    font: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.counterButton:hover:not(:disabled) {
+    background-color: #eceef0;
+}
+
+.counterButton:focus-visible,
+.classButton:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+.counterButton:disabled {
+    color: #aeb4bd;
+    cursor: default;
+    opacity: 0.6;
+}
+
+.count {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.classRow {
+    min-height: 56px;
+    border-bottom: 0;
+}
+
+.classControl {
+    display: flex;
+    padding: 3px;
+    border-radius: 10px;
+    background-color: #eef0f2;
+}
+
+.classButton {
+    min-height: 30px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    color: var(--color-text-primary);
+    background-color: transparent;
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.classButton[aria-pressed="true"] {
+    background-color: var(--color-background-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgb(17 17 17 / 12%);
+}
+
+@media (max-width: 1023px) {
+    .panel {
+        width: 294px;
+        margin-top: 16px;
+    }
+}
+
+@media (max-width: 767px) {
+    .panel {
+        width: 100%;
+        margin-top: 12px;
+    }
+
+    .row {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+}
