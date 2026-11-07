@@ -9,12 +9,8 @@ describe('AppHeader', () => {
     expect(screen.getByRole('banner')).toBeInTheDocument()
     expect(screen.getByText('T-AMAD-A')).toBeInTheDocument()
 
-    expect(
-      screen.getByRole('link', { name: 'Собрать поездку' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Собрать поездку' })).toBeInTheDocument()
 
-    expect(
-      screen.getByRole('link', { name: 'Мои поездки' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Мои поездки' })).toBeInTheDocument()
   })
 })

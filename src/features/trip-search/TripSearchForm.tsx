@@ -1,9 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
 import DatePicker, { type SelectionMode } from './DatePicker'
 import styles from './TripSearchForm.module.css'
-import PassengerSelector, {
-  type PassengerSelection,
-} from './PassengerSelector'
+import PassengerSelector, { type PassengerSelection } from './PassengerSelector'
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
@@ -14,13 +12,8 @@ function formatDate(date: Date | null) {
   return date ? dateFormatter.format(date) : 'Выберите дату'
 }
 
-function formatPassengerSummary(
-  passengers: PassengerSelection,
-) {
-  const total =
-    passengers.adults +
-    passengers.children +
-    passengers.infants
+function formatPassengerSummary(passengers: PassengerSelection) {
+  const total = passengers.adults + passengers.children + passengers.infants
 
   let passengerWord = 'пассажиров'
 
@@ -30,10 +23,7 @@ function formatPassengerSummary(
     passengerWord = 'пассажира'
   }
 
-  const className =
-    passengers.travelClass === 'economy'
-      ? 'эконом'
-      : 'бизнес'
+  const className = passengers.travelClass === 'economy' ? 'эконом' : 'бизнес'
 
   return `${total} ${passengerWord}, ${className}`
 }
@@ -43,17 +33,15 @@ type ActivePanel = 'calendar' | 'passengers' | null
 function TripSearchForm() {
   const [isOneWay, setIsOneWay] = useState(false)
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
-  const [selectionMode, setSelectionMode] =
-    useState<SelectionMode>('departure')
+  const [selectionMode, setSelectionMode] = useState<SelectionMode>('departure')
   const [departureDate, setDepartureDate] = useState<Date | null>(null)
   const [returnDate, setReturnDate] = useState<Date | null>(null)
-  const [passengers, setPassengers] =
-    useState<PassengerSelection>({
-      adults: 2,
-      children: 0,
-      infants: 0,
-      travelClass: 'economy',
-    })
+  const [passengers, setPassengers] = useState<PassengerSelection>({
+    adults: 2,
+    children: 0,
+    infants: 0,
+    travelClass: 'economy',
+  })
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
@@ -96,62 +84,34 @@ function TripSearchForm() {
   }
 
   return (
-    <section
-      className={styles.section}
-      aria-labelledby="trip-search-title"
-    >
+    <section className={styles.section} aria-labelledby="trip-search-title">
       <h1 className={styles.heading} id="trip-search-title">
         Соберите поездку целиком
       </h1>
 
-      <p className={styles.subtitle}>
-        Все нужные услуги — в одном заказе
-      </p>
+      <p className={styles.subtitle}>Все нужные услуги — в одном заказе</p>
 
       <form className={styles.form} onSubmit={handleSubmit}>
-        <div
-          className={`${styles.fields} ${isOneWay ? styles.oneWayFields : ''
-            }`}
-        >
+        <div className={`${styles.fields} ${isOneWay ? styles.oneWayFields : ''}`}>
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Откуда</span>
-            <input
-              className={styles.input}
-              name="origin"
-              defaultValue="Москва"
-            />
+            <input className={styles.input} name="origin" defaultValue="Москва" />
           </label>
 
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Куда</span>
-            <input
-              className={styles.input}
-              name="destination"
-              defaultValue="Екатеринбург"
-            />
+            <input className={styles.input} name="destination" defaultValue="Екатеринбург" />
           </label>
 
-          <button
-            className={styles.field}
-            type="button"
-            onClick={openDepartureCalendar}
-          >
+          <button className={styles.field} type="button" onClick={openDepartureCalendar}>
             <span className={styles.fieldLabel}>Когда</span>
-            <span className={styles.fieldValue}>
-              {formatDate(departureDate)}
-            </span>
+            <span className={styles.fieldValue}>{formatDate(departureDate)}</span>
           </button>
 
           {!isOneWay && (
-            <button
-              className={styles.field}
-              type="button"
-              onClick={openReturnCalendar}
-            >
+            <button className={styles.field} type="button" onClick={openReturnCalendar}>
               <span className={styles.fieldLabel}>Обратно</span>
-              <span className={styles.fieldValue}>
-                {formatDate(returnDate)}
-              </span>
+              <span className={styles.fieldValue}>{formatDate(returnDate)}</span>
             </button>
           )}
 
@@ -160,12 +120,8 @@ function TripSearchForm() {
             type="button"
             onClick={() => setActivePanel('passengers')}
           >
-            <span className={styles.fieldLabel}>
-              Пассажиры и класс
-            </span>
-            <span className={styles.fieldValue}>
-              {formatPassengerSummary(passengers)}
-            </span>
+            <span className={styles.fieldLabel}>Пассажиры и класс</span>
+            <span className={styles.fieldValue}>{formatPassengerSummary(passengers)}</span>
           </button>
 
           <button className={styles.submitButton} type="submit">
@@ -196,10 +152,7 @@ function TripSearchForm() {
       )}
 
       {activePanel === 'passengers' && (
-        <PassengerSelector
-          value={passengers}
-          onChange={setPassengers}
-        />
+        <PassengerSelector value={passengers} onChange={setPassengers} />
       )}
     </section>
   )

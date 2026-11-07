@@ -1,8 +1,4 @@
-import {
-  fireEvent,
-  render,
-  screen,
-} from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import PassengerSelector from './PassengerSelector'
 
@@ -17,12 +13,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -47,12 +38,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     const decrementButton = screen.getByRole('button', {
       name: 'Уменьшить количество взрослых',
@@ -74,12 +60,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     const incrementButton = screen.getByRole('button', {
       name: 'Увеличить количество взрослых',
@@ -101,12 +82,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -131,12 +107,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     const decrementButton = screen.getByRole('button', {
       name: 'Уменьшить количество детей',
@@ -158,12 +129,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -188,12 +154,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     const incrementButton = screen.getByRole('button', {
       name: 'Увеличить количество младенцев',
@@ -215,12 +176,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -245,12 +201,7 @@ describe('PassengerSelector', () => {
       travelClass: 'business' as const,
     }
 
-    render(
-      <PassengerSelector
-        value={value}
-        onChange={onChange}
-      />,
-    )
+    render(<PassengerSelector value={value} onChange={onChange} />)
 
     fireEvent.click(
       screen.getByRole('button', {
