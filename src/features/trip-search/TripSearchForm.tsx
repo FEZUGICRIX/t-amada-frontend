@@ -2,6 +2,19 @@ import { useState, type SubmitEvent } from 'react'
 import DatePicker, { type SelectionMode } from './DatePicker'
 import PassengerSelector, { type PassengerSelection } from './PassengerSelector'
 
+const CITY_NAMES = [
+  'Екатеринбург',
+  'Москва',
+  'Санкт-Петербург',
+  'Казань',
+  'Нижний Новгород',
+  'Сочи',
+  'Самара',
+  'Уфа',
+  'Пермь',
+  'Челябинск',
+]
+
 const FIELD_CLASS_NAME =
   'flex h-[60px] min-w-0 flex-col items-start justify-center rounded-xl border border-[#e3e5e8] bg-background-primary p-2 text-left text-text-primary focus-within:border-text-primary focus-visible:border-text-primary focus-visible:outline-none md:h-16 md:px-3 md:py-2.5'
 
@@ -87,15 +100,11 @@ function TripSearchForm() {
   function handleOneWayChange(isChecked: boolean) {
     setIsOneWay(isChecked)
     setSelectionMode('departure')
-
-    if (isChecked) {
-      setReturnDate(null)
-    }
   }
 
   return (
     <section
-      className="mt-4 w-full rounded-2xl bg-[linear-gradient(180deg,#fffbe2_0%,#fff8cf_100%)] px-4 pt-6 pb-4 md:mt-6 md:rounded-3xl md:p-8 lg:mt-8"
+      className="mt-4 w-full rounded-2xl bg-[radial-gradient(circle_at_88%_8%,rgb(255_221_45_/_32%)_0%,transparent_38%),linear-gradient(135deg,#fffdf8_0%,#fff8dc_100%)] px-4 pt-6 pb-4 md:mt-6 md:rounded-3xl md:p-8 lg:mt-8"
       aria-labelledby="trip-search-title"
     >
       <h1
@@ -116,6 +125,7 @@ function TripSearchForm() {
             <input
               className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
               name="origin"
+              list="trip-cities"
               defaultValue="Москва"
             />
           </label>
@@ -125,26 +135,34 @@ function TripSearchForm() {
             <input
               className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
               name="destination"
+              list="trip-cities"
               defaultValue="Екатеринбург"
             />
           </label>
+
+          <datalist id="trip-cities">
+            {CITY_NAMES.map((cityName) => (
+              <option key={cityName} value={cityName} />
+            ))}
+          </datalist>
 
           <button className={FIELD_BUTTON_CLASS_NAME} type="button" onClick={openDepartureCalendar}>
             <span className={FIELD_LABEL_CLASS_NAME}>Когда</span>
             <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(departureDate)}</span>
           </button>
 
-          {!isOneWay && (
-            <button className={FIELD_BUTTON_CLASS_NAME} type="button" onClick={openReturnCalendar}>
-              <span className={FIELD_LABEL_CLASS_NAME}>Обратно</span>
-              <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(returnDate)}</span>
-            </button>
-          )}
+          <button
+            className={`${FIELD_BUTTON_CLASS_NAME} disabled:cursor-not-allowed disabled:bg-[#f5f6f7] disabled:opacity-60`}
+            type="button"
+            onClick={openReturnCalendar}
+            disabled={isOneWay}
+          >
+            <span className={FIELD_LABEL_CLASS_NAME}>Обратно</span>
+            <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(returnDate)}</span>
+          </button>
 
           <button
-            className={`${FIELD_BUTTON_CLASS_NAME} col-span-2 ${
-              isOneWay ? 'lg:col-start-4 lg:col-end-6' : 'lg:col-start-5 lg:col-end-6'
-            }`}
+            className={`${FIELD_BUTTON_CLASS_NAME} col-span-2 lg:col-start-5 lg:col-end-6`}
             type="button"
             onClick={() => setActivePanel('passengers')}
           >

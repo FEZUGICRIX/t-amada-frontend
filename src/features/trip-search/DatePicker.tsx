@@ -4,7 +4,7 @@ const NAVIGATION_BUTTON_CLASS_NAME =
   'grid size-8 cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-0 text-2xl leading-none text-text-primary enabled:hover:bg-[#f2f3f5] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-default disabled:text-[#c7cdd4]'
 
 const DAY_CLASS_NAME =
-  'relative h-7 cursor-pointer rounded-lg border-0 bg-transparent p-0 text-[10px] leading-[14px] text-text-primary enabled:hover:bg-[#fff3a3] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-text-primary disabled:cursor-default disabled:text-[#c7cdd4] md:text-[11px]'
+  'relative h-7 cursor-pointer rounded-lg border-0 p-0 text-[10px] leading-[14px] text-text-primary enabled:hover:bg-[#fff3a3] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-text-primary disabled:cursor-default disabled:text-[#c7cdd4] md:text-[11px]'
 
 const MONTH_NAMES = [
   'Январь',
@@ -191,7 +191,6 @@ function DatePicker({ departureDate, returnDate, selectionMode, onSelect }: Date
             dateTime < departureDate.getTime()
           const isDisabled =
             dateTime < today.getTime() || isBeforeDeparture || date.getFullYear() > maxYear
-
           const dayClassName = [
             DAY_CLASS_NAME,
             isOutsideMonth ? 'text-[#aeb4bd]' : '',
