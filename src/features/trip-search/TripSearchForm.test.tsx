@@ -12,7 +12,32 @@ describe('TripSearchForm', () => {
     vi.useRealTimers()
   })
 
-  it('hides the return date for a one-way trip', () => {
+  it('offers the same city suggestions for both route fields', () => {
+    render(<TripSearchForm />)
+
+    expect(screen.getByRole('combobox', { name: 'Откуда' })).toHaveAttribute('list', 'trip-cities')
+    expect(screen.getByRole('combobox', { name: 'Куда' })).toHaveAttribute('list', 'trip-cities')
+
+    const cityList = document.getElementById('trip-cities')
+    const cityNames = [...(cityList?.querySelectorAll('option') ?? [])].map(
+      (option) => option.value,
+    )
+
+    expect(cityNames).toEqual([
+      'Екатеринбург',
+      'Москва',
+      'Санкт-Петербург',
+      'Казань',
+      'Нижний Новгород',
+      'Сочи',
+      'Самара',
+      'Уфа',
+      'Пермь',
+      'Челябинск',
+    ])
+  })
+
+  it('disables the return date for a one-way trip', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(
@@ -21,7 +46,29 @@ describe('TripSearchForm', () => {
       }),
     )
 
-    expect(screen.queryByRole('button', { name: /Обратно/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Обратно/ })).toBeDisabled()
+  })
+
+  it('keeps the selected return date after toggling one-way mode', () => {
+    render(<TripSearchForm />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
+    fireEvent.click(screen.getByRole('button', { name: '5 ноября 2026' }))
+    fireEvent.click(screen.getByRole('button', { name: '8 ноября 2026' }))
+
+    const oneWayCheckbox = screen.getByRole('checkbox', {
+      name: 'Билет в одну сторону',
+    })
+
+    fireEvent.click(oneWayCheckbox)
+
+    expect(screen.getByRole('button', { name: /Обратно/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('8 ноября')
+
+    fireEvent.click(oneWayCheckbox)
+
+    expect(screen.getByRole('button', { name: /Обратно/ })).toBeEnabled()
+    expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('8 ноября')
   })
 
   it('shows empty date fields initially', () => {
