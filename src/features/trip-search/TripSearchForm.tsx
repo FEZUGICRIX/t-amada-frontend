@@ -1,7 +1,17 @@
 import { useState, type SubmitEvent } from 'react'
 import DatePicker, { type SelectionMode } from './DatePicker'
-import styles from './TripSearchForm.module.css'
 import PassengerSelector, { type PassengerSelection } from './PassengerSelector'
+
+const FIELD_CLASS_NAME =
+  'flex h-[60px] min-w-0 flex-col items-start justify-center rounded-xl border border-[#e3e5e8] bg-background-primary p-2 text-left text-text-primary focus-within:border-text-primary focus-visible:border-text-primary focus-visible:outline-none md:h-16 md:px-3 md:py-2.5'
+
+const FIELD_BUTTON_CLASS_NAME = `${FIELD_CLASS_NAME} cursor-pointer`
+
+const FIELD_LABEL_CLASS_NAME =
+  'w-full overflow-hidden text-ellipsis whitespace-nowrap text-[9px] leading-3 text-text-secondary md:text-[10px] md:leading-[14px]'
+
+const FIELD_VALUE_CLASS_NAME =
+  'w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs leading-4 font-semibold md:text-sm md:leading-5'
 
 const dateFormatter = new Intl.DateTimeFormat('ru-RU', {
   day: 'numeric',
@@ -84,60 +94,84 @@ function TripSearchForm() {
   }
 
   return (
-    <section className={styles.section} aria-labelledby="trip-search-title">
-      <h1 className={styles.heading} id="trip-search-title">
+    <section
+      className="mt-4 w-full rounded-2xl bg-[linear-gradient(180deg,#fffbe2_0%,#fff8cf_100%)] px-4 pt-6 pb-4 md:mt-6 md:rounded-3xl md:p-8 lg:mt-8"
+      aria-labelledby="trip-search-title"
+    >
+      <h1
+        className="m-0 text-2xl leading-6 font-semibold md:text-[32px] md:leading-[38px]"
+        id="trip-search-title"
+      >
         Соберите поездку целиком
       </h1>
 
-      <p className={styles.subtitle}>Все нужные услуги — в одном заказе</p>
+      <p className="mt-0.5 mb-6 text-[10px] leading-[14px] text-text-secondary md:text-sm md:leading-5">
+        Все нужные услуги — в одном заказе
+      </p>
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={`${styles.fields} ${isOneWay ? styles.oneWayFields : ''}`}>
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Откуда</span>
-            <input className={styles.input} name="origin" defaultValue="Москва" />
+      <form className="w-full" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-[1.23fr_1.23fr_1fr_1fr_1.39fr_164px]">
+          <label className={FIELD_CLASS_NAME}>
+            <span className={FIELD_LABEL_CLASS_NAME}>Откуда</span>
+            <input
+              className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
+              name="origin"
+              defaultValue="Москва"
+            />
           </label>
 
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Куда</span>
-            <input className={styles.input} name="destination" defaultValue="Екатеринбург" />
+          <label className={FIELD_CLASS_NAME}>
+            <span className={FIELD_LABEL_CLASS_NAME}>Куда</span>
+            <input
+              className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
+              name="destination"
+              defaultValue="Екатеринбург"
+            />
           </label>
 
-          <button className={styles.field} type="button" onClick={openDepartureCalendar}>
-            <span className={styles.fieldLabel}>Когда</span>
-            <span className={styles.fieldValue}>{formatDate(departureDate)}</span>
+          <button className={FIELD_BUTTON_CLASS_NAME} type="button" onClick={openDepartureCalendar}>
+            <span className={FIELD_LABEL_CLASS_NAME}>Когда</span>
+            <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(departureDate)}</span>
           </button>
 
           {!isOneWay && (
-            <button className={styles.field} type="button" onClick={openReturnCalendar}>
-              <span className={styles.fieldLabel}>Обратно</span>
-              <span className={styles.fieldValue}>{formatDate(returnDate)}</span>
+            <button className={FIELD_BUTTON_CLASS_NAME} type="button" onClick={openReturnCalendar}>
+              <span className={FIELD_LABEL_CLASS_NAME}>Обратно</span>
+              <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(returnDate)}</span>
             </button>
           )}
 
           <button
-            className={`${styles.field} ${styles.passengersField}`}
+            className={`${FIELD_BUTTON_CLASS_NAME} col-span-2 ${
+              isOneWay ? 'lg:col-start-4 lg:col-end-6' : 'lg:col-start-5 lg:col-end-6'
+            }`}
             type="button"
             onClick={() => setActivePanel('passengers')}
           >
-            <span className={styles.fieldLabel}>Пассажиры и класс</span>
-            <span className={styles.fieldValue}>{formatPassengerSummary(passengers)}</span>
+            <span className={FIELD_LABEL_CLASS_NAME}>Пассажиры и класс</span>
+            <span className={FIELD_VALUE_CLASS_NAME}>{formatPassengerSummary(passengers)}</span>
           </button>
 
-          <button className={styles.submitButton} type="submit">
+          <button
+            className="col-span-2 h-[60px] cursor-pointer rounded-xl border-0 bg-accent px-4 text-xs leading-4 font-semibold text-text-primary hover:brightness-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary md:h-16 md:text-sm md:leading-5 lg:col-span-1"
+            type="submit"
+          >
             Найти билеты
           </button>
         </div>
 
-        <label className={styles.oneWay}>
+        <label className="relative mt-3 flex w-fit cursor-pointer items-center gap-2 text-[10px] leading-[14px] md:text-xs md:leading-4">
           <input
-            className={styles.checkbox}
+            className="peer absolute h-px w-px opacity-0"
             type="checkbox"
             name="oneWay"
             checked={isOneWay}
             onChange={(evt) => handleOneWayChange(evt.target.checked)}
           />
-          <span className={styles.switch} aria-hidden="true" />
+          <span
+            className="relative h-[18px] w-8 flex-none rounded-full bg-[#c7cdd4] transition-colors duration-[160ms] after:absolute after:top-0.5 after:left-0.5 after:size-3.5 after:rounded-full after:bg-white after:content-[''] after:transition-transform after:duration-[160ms] peer-checked:bg-accent peer-checked:after:translate-x-3.5 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-text-primary"
+            aria-hidden="true"
+          />
           <span>Билет в одну сторону</span>
         </label>
       </form>

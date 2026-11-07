@@ -2,6 +2,14 @@
 
 Frontend сервиса составного бронирования путешествий.
 
+## Стек
+
+- React 19;
+- TypeScript;
+- Vite;
+- Tailwind CSS 4;
+- Vitest и React Testing Library.
+
 ## Требования
 
 - Node.js 24
