@@ -43,11 +43,7 @@ type DatePickerProps = {
 }
 
 function startOfDay(date: Date) {
-  return new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  )
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
 
 function isSameDay(firstDate: Date, secondDate: Date) {
@@ -66,46 +62,26 @@ function getCalendarDates(year: number, month: number) {
 
   return Array.from(
     { length: cellCount },
-    (_, index) =>
-      new Date(year, month, index - mondayBasedDay + 1),
+    (_, index) => new Date(year, month, index - mondayBasedDay + 1),
   )
 }
 
-function DatePicker({
-  departureDate,
-  returnDate,
-  selectionMode,
-  onSelect,
-}: DatePickerProps) {
+function DatePicker({ departureDate, returnDate, selectionMode, onSelect }: DatePickerProps) {
   const today = startOfDay(new Date())
   const initialDate =
-    selectionMode === 'return' && returnDate
-      ? returnDate
-      : departureDate ?? today
+    selectionMode === 'return' && returnDate ? returnDate : (departureDate ?? today)
 
   const [visibleDate, setVisibleDate] = useState(
-    () =>
-      new Date(
-        initialDate.getFullYear(),
-        initialDate.getMonth(),
-        1,
-      ),
+    () => new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
   )
 
   const year = visibleDate.getFullYear()
   const month = visibleDate.getMonth()
-  const currentMonth = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    1,
-  )
+  const currentMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const maxYear = today.getFullYear() + 5
   const maxMonth = new Date(maxYear, 11, 1)
   const calendarDates = getCalendarDates(year, month)
-  const availableYears = Array.from(
-    { length: 6 },
-    (_, index) => today.getFullYear() + index,
-  )
+  const availableYears = Array.from({ length: 6 }, (_, index) => today.getFullYear() + index)
 
   const isPreviousDisabled = visibleDate <= currentMonth
   const isNextDisabled = visibleDate >= maxMonth
@@ -116,12 +92,7 @@ function DatePicker({
     }
 
     setVisibleDate(
-      (currentDate) =>
-        new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth() - 1,
-          1,
-        ),
+      (currentDate) => new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     )
   }
 
@@ -131,30 +102,19 @@ function DatePicker({
     }
 
     setVisibleDate(
-      (currentDate) =>
-        new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth() + 1,
-          1,
-        ),
+      (currentDate) => new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
     )
   }
 
   function changeYear(nextYear: number) {
     const nextMonth =
-      nextYear === today.getFullYear() && month < today.getMonth()
-        ? today.getMonth()
-        : month
+      nextYear === today.getFullYear() && month < today.getMonth() ? today.getMonth() : month
 
     setVisibleDate(new Date(nextYear, nextMonth, 1))
   }
 
   return (
-    <div
-      className={styles.calendar}
-      role="dialog"
-      aria-label="Выбор даты"
-    >
+    <div className={styles.calendar} role="dialog" aria-label="Выбор даты">
       <div className={styles.header}>
         <button
           className={styles.navigationButton}
@@ -204,10 +164,8 @@ function DatePicker({
           const dateTime = date.getTime()
           const isOutsideMonth = date.getMonth() !== month
           const isToday = isSameDay(date, today)
-          const isDeparture =
-            departureDate !== null && isSameDay(date, departureDate)
-          const isReturn =
-            returnDate !== null && isSameDay(date, returnDate)
+          const isDeparture = departureDate !== null && isSameDay(date, departureDate)
+          const isReturn = returnDate !== null && isSameDay(date, returnDate)
           const isInRange =
             departureDate !== null &&
             returnDate !== null &&
@@ -218,9 +176,7 @@ function DatePicker({
             departureDate !== null &&
             dateTime < departureDate.getTime()
           const isDisabled =
-            dateTime < today.getTime() ||
-            isBeforeDeparture ||
-            date.getFullYear() > maxYear
+            dateTime < today.getTime() || isBeforeDeparture || date.getFullYear() > maxYear
 
           const dayClassName = [
             styles.day,
@@ -243,13 +199,7 @@ function DatePicker({
               disabled={isDisabled}
               onClick={() => {
                 if (isOutsideMonth) {
-                  setVisibleDate(
-                    new Date(
-                      date.getFullYear(),
-                      date.getMonth(),
-                      1,
-                    ),
-                  )
+                  setVisibleDate(new Date(date.getFullYear(), date.getMonth(), 1))
                 }
 
                 onSelect(date)

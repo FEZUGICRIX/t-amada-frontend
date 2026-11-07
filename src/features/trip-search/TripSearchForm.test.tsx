@@ -1,16 +1,5 @@
-import {
-  fireEvent,
-  render,
-  screen,
-} from '@testing-library/react'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TripSearchForm from './TripSearchForm'
 
 describe('TripSearchForm', () => {
@@ -32,33 +21,23 @@ describe('TripSearchForm', () => {
       }),
     )
 
-    expect(
-      screen.queryByRole('button', { name: /Обратно/ }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Обратно/ })).not.toBeInTheDocument()
   })
 
   it('shows empty date fields initially', () => {
     render(<TripSearchForm />)
 
-    expect(
-      screen.getByRole('button', { name: /Когда/ }),
-    ).toHaveTextContent('Выберите дату')
+    expect(screen.getByRole('button', { name: /Когда/ })).toHaveTextContent('Выберите дату')
 
-    expect(
-      screen.getByRole('button', { name: /Обратно/ }),
-    ).toHaveTextContent('Выберите дату')
+    expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('Выберите дату')
   })
 
   it('opens the current month calendar from the departure button', () => {
     render(<TripSearchForm />)
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Когда/ }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
 
-    expect(
-      screen.getByRole('dialog', { name: 'Выбор даты' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
 
     expect(screen.getByText('Ноябрь')).toBeInTheDocument()
 
@@ -72,21 +51,15 @@ describe('TripSearchForm', () => {
   it('keeps the calendar open after selecting a date range', () => {
     render(<TripSearchForm />)
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Когда/ }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
     fireEvent.click(
       screen.getByRole('button', {
         name: '5 ноября 2026',
       }),
     )
 
-    expect(
-      screen.getByRole('button', { name: /Когда/ }),
-    ).toHaveTextContent('5 ноября')
-    expect(
-      screen.getByRole('dialog', { name: 'Выбор даты' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Когда/ })).toHaveTextContent('5 ноября')
+    expect(screen.getByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -94,12 +67,8 @@ describe('TripSearchForm', () => {
       }),
     )
 
-    expect(
-      screen.getByRole('button', { name: /Обратно/ }),
-    ).toHaveTextContent('8 ноября')
-    expect(
-      screen.queryByRole('dialog', { name: 'Выбор даты' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('8 ноября')
+    expect(screen.queryByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
   })
 
   it('keeps the calendar open after selecting a one-way date', () => {
@@ -110,29 +79,21 @@ describe('TripSearchForm', () => {
         name: 'Билет в одну сторону',
       }),
     )
-    fireEvent.click(
-      screen.getByRole('button', { name: /Когда/ }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
     fireEvent.click(
       screen.getByRole('button', {
         name: '5 ноября 2026',
       }),
     )
 
-    expect(
-      screen.queryByRole('dialog', { name: 'Выбор даты' }),
-    ).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
   })
   it('opens the passenger selector and closes the calendar', () => {
     render(<TripSearchForm />)
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Когда/ }),
-    )
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
 
-    expect(
-      screen.getByRole('dialog', { name: 'Выбор даты' }),
-    ).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -140,9 +101,7 @@ describe('TripSearchForm', () => {
       }),
     )
 
-    expect(
-      screen.queryByRole('dialog', { name: 'Выбор даты' }),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Выбор даты' })).not.toBeInTheDocument()
 
     expect(
       screen.getByRole('dialog', {

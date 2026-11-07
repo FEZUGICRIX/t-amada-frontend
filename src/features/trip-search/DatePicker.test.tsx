@@ -1,16 +1,5 @@
-import {
-  fireEvent,
-  render,
-  screen,
-} from '@testing-library/react'
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DatePicker from './DatePicker'
 
 const defaultProps = {
@@ -88,11 +77,7 @@ describe('DatePicker', () => {
 
   it('disables return dates earlier than the departure date', () => {
     render(
-      <DatePicker
-        {...defaultProps}
-        departureDate={new Date(2026, 10, 5)}
-        selectionMode="return"
-      />,
+      <DatePicker {...defaultProps} departureDate={new Date(2026, 10, 5)} selectionMode="return" />,
     )
 
     expect(
@@ -111,12 +96,7 @@ describe('DatePicker', () => {
   it('returns the selected date', () => {
     const onSelect = vi.fn()
 
-    render(
-      <DatePicker
-        {...defaultProps}
-        onSelect={onSelect}
-      />,
-    )
+    render(<DatePicker {...defaultProps} onSelect={onSelect} />)
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -124,8 +104,6 @@ describe('DatePicker', () => {
       }),
     )
 
-    expect(onSelect).toHaveBeenCalledWith(
-      new Date(2026, 10, 5),
-    )
+    expect(onSelect).toHaveBeenCalledWith(new Date(2026, 10, 5))
   })
 })
