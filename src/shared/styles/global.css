@@ -1,7 +1,15 @@
-@import './tokens.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-text-primary: #111111;
+  --color-background-primary: #ffffff;
+  --color-text-secondary: #74777c;
+  --color-accent: #ffdd2d;
+}
 
 :root {
-  font-family: var(--font-family-base);
+  font-family: var(--font-sans);
   color: var(--color-text-primary);
   background-color: var(--color-background-primary);
   font-synthesis: none;
