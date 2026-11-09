@@ -53,7 +53,11 @@ function formatPassengerSummary(passengers: PassengerSelection) {
 
 type ActivePanel = 'calendar' | 'passengers' | null
 
-function TripSearchForm() {
+type TripSearchFormProps = {
+  onSearch?: () => void
+}
+
+function TripSearchForm({ onSearch }: TripSearchFormProps) {
   const [isOneWay, setIsOneWay] = useState(false)
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('departure')
@@ -68,6 +72,7 @@ function TripSearchForm() {
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
+    onSearch?.()
   }
 
   function openDepartureCalendar() {

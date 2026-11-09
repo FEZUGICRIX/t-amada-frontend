@@ -198,4 +198,18 @@ describe('TripSearchForm', () => {
       }),
     ).toBeInTheDocument()
   })
+
+  it('starts the flight search after submitting the form', () => {
+    const onSearch = vi.fn()
+
+    render(<TripSearchForm onSearch={onSearch} />)
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Найти билеты',
+      }),
+    )
+
+    expect(onSearch).toHaveBeenCalledOnce()
+  })
 })

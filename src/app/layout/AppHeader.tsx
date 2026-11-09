@@ -1,8 +1,8 @@
 function AppHeader() {
   return (
-    <header className="flex h-[62px] w-full items-center justify-between bg-background-primary px-5 md:h-[70px] md:px-9 lg:h-[76px] lg:px-[72px]">
+    <header className="flex h-[62px] w-full items-center justify-between bg-background-primary px-4 md:h-[70px] md:px-9 lg:h-[76px] lg:px-[72px]">
       <a
-        className="flex items-center gap-3 text-text-primary no-underline"
+        className="flex shrink-0 items-center gap-2 text-text-primary no-underline md:gap-3"
         href="/"
         aria-label="T-AMAD-A - на главную"
       >
@@ -12,7 +12,9 @@ function AppHeader() {
         >
           TA
         </span>
-        <span className="text-xl leading-6 font-semibold">T-AMAD-A</span>
+        <span className="whitespace-nowrap text-lg leading-6 font-semibold md:text-xl">
+          T-AMAD-A
+        </span>
       </a>
 
       <nav
@@ -21,8 +23,9 @@ function AppHeader() {
       >
         <a
           href="/"
-          className="hidden h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm leading-5 font-semibold text-text-primary no-underline shadow-[0_1px_3px_rgb(17_17_17_/_12%)] transition-[filter,transform] duration-150 hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px md:inline-flex"
+          className="inline-flex size-9 items-center justify-center gap-2 rounded-lg bg-accent text-sm leading-5 font-semibold text-text-primary no-underline shadow-[0_1px_3px_rgb(17_17_17_/_12%)] transition-[filter,transform] duration-150 hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px md:w-auto md:px-3.5"
           aria-current="page"
+          aria-label="Собрать поездку"
         >
           <svg
             className="size-4"
@@ -35,7 +38,7 @@ function AppHeader() {
           >
             <path d="M12 5v14M5 12h14" />
           </svg>
-          Собрать поездку
+          <span className="hidden md:inline">Собрать поездку</span>
         </a>
         <a
           href="/trips"
@@ -55,7 +58,7 @@ function AppHeader() {
             <rect width="18" height="13" x="3" y="7" rx="3" />
             <path d="M3 12h18" />
           </svg>
-          Мои поездки
+          <span className="whitespace-nowrap">Мои поездки</span>
         </a>
       </nav>
     </header>
