@@ -32,4 +32,13 @@ describe('FlightCard', () => {
 
     expect(onSelect).toHaveBeenCalledWith('aeroflot-1')
   })
+
+  it('selects the flight when the card is clicked', () => {
+    const onSelect = vi.fn()
+
+    render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={onSelect} />)
+    fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
+
+    expect(onSelect).toHaveBeenCalledWith('aeroflot-1')
+  })
 })
