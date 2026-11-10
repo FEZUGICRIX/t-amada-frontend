@@ -1,30 +1,8 @@
-import { act, render, screen } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 import FlightSelectionPage from './FlightSelectionPage'
 
-let intersectionCallback: IntersectionObserverCallback = () => undefined
-
-class IntersectionObserverMock implements IntersectionObserver {
-  readonly root = null
-  readonly rootMargin = ''
-  readonly scrollMargin = ''
-  readonly thresholds = []
-
-  constructor(callback: IntersectionObserverCallback) {
-    intersectionCallback = callback
-  }
-
-  disconnect = vi.fn()
-  observe = vi.fn()
-  takeRecords = vi.fn(() => [])
-  unobserve = vi.fn()
-}
-
 describe('FlightSelectionPage', () => {
-  beforeEach(() => {
-    vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
-  })
-
   it('renders the page heading', () => {
     render(<FlightSelectionPage />)
 
@@ -43,7 +21,7 @@ describe('FlightSelectionPage', () => {
   it('renders the available flights', () => {
     render(<FlightSelectionPage />)
 
-    expect(screen.getByText('27 рейсов')).toBeInTheDocument()
+    expect(screen.getByText('6 рейсов')).toBeInTheDocument()
     expect(screen.getAllByRole('article')).toHaveLength(3)
 
     expect(screen.getByText('Аэрофлот')).toBeInTheDocument()
@@ -61,21 +39,42 @@ describe('FlightSelectionPage', () => {
     ).toBeInTheDocument()
 
     expect(screen.getByText('Итого')).toBeInTheDocument()
-    expect(screen.getAllByText('25 640 ₽')).toHaveLength(2)
+    expect(screen.getAllByText('25 230 ₽')).toHaveLength(2)
   })
 
-  it('loads more flights when the loader enters the viewport', () => {
+  it('updates the total after selecting another flight', () => {
     render(<FlightSelectionPage />)
 
-    expect(screen.getAllByRole('article')).toHaveLength(3)
+    const pobedaCard = screen.getByRole('article', { name: 'Рейс Победа' })
 
-    act(() => {
-      intersectionCallback(
-        [{ isIntersecting: true } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      )
-    })
+    fireEvent.click(within(pobedaCard).getByRole('button', { name: 'Выбрать' }))
 
-    expect(screen.getAllByRole('article')).toHaveLength(6)
+    expect(screen.getAllByText('22 630 ₽')).toHaveLength(2)
+  })
+
+  it('selects a flight from the list', () => {
+    render(<FlightSelectionPage />)
+
+    const pobedaCard = screen.getByRole('article', { name: 'Рейс Победа' })
+
+    fireEvent.click(within(pobedaCard).getByRole('button', { name: 'Выбрать' }))
+
+    expect(within(pobedaCard).getByRole('button', { name: 'Выбрано' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+  })
+
+  it('shows return flights after continuing', () => {
+    render(<FlightSelectionPage />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+
+    expect(
+      screen.getByRole('heading', {
+        name: 'Выберите рейс обратно',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Сочи → Москва')).toBeInTheDocument()
   })
 })
