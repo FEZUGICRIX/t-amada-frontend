@@ -26,10 +26,11 @@ function FlightCard({ flight, isSelected, onSelect }: FlightCardProps) {
 
   return (
     <article
-      className={`grid grid-cols-[44px_minmax(0,1fr)] gap-x-3 rounded-xl bg-white p-4 md:grid-cols-[44px_minmax(0,1fr)_auto] md:gap-x-4 ${
+      className={`grid cursor-pointer grid-cols-[44px_minmax(0,1fr)] gap-x-3 rounded-xl bg-white p-4 transition-shadow hover:shadow-sm md:grid-cols-[44px_minmax(0,1fr)_auto] md:gap-x-4 ${
         isSelected ? 'border-2 border-text-primary' : 'border border-[#e1e4e8]'
       }`}
       aria-label={`Рейс ${flight.airline}`}
+      onClick={() => onSelect(flight.id)}
     >
       <div
         className={`grid size-11 place-items-center rounded-lg border border-[#e1e4e8] text-[13px] font-semibold ${
@@ -100,7 +101,10 @@ function FlightCard({ flight, isSelected, onSelect }: FlightCardProps) {
           }`}
           type="button"
           aria-pressed={isSelected}
-          onClick={() => onSelect(flight.id)}
+          onClick={(event) => {
+            event.stopPropagation()
+            onSelect(flight.id)
+          }}
         >
           {isSelected ? 'Выбрано' : 'Выбрать'}
         </button>
