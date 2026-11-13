@@ -1,9 +1,19 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import userEvent from '@testing-library/user-event'
 import FlightCard from './FlightCard'
 import { outboundFlights } from './mockFlights'
 
 describe('FlightCard', () => {
+  it('allows selecting a flight using the keyboard', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+    render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={onSelect} />)
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Выбрать' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(onSelect).toHaveBeenCalledOnce()
+  })
   it('renders structured flight data', () => {
     render(<FlightCard flight={outboundFlights[2]} isSelected={false} onSelect={() => undefined} />)
 

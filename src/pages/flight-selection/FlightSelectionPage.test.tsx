@@ -5,6 +5,58 @@ import TripSearchForm from '@/features/trip-search/TripSearchForm'
 
 describe('FlightSelectionPage', () => {
   beforeEach(() => sessionStorage.clear())
+  it('shows a per-ticket price and totals adults and children while infants travel free', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({
+        origin: 'Москва',
+        destination: 'Сочи',
+        departureDate: '2026-12-01',
+        returnDate: null,
+        isOneWay: true,
+        passengers: { adults: 3, children: 2, infants: 1, travelClass: 'economy' },
+      }),
+    )
+    render(<FlightSelectionPage />)
+    const flight = screen.getByRole('article', { name: 'Рейс Аэрофлот' })
+    expect(within(flight).getByText('12 440 ₽')).toBeInTheDocument()
+    expect(within(flight).getByText('За 1 билет')).toBeInTheDocument()
+    fireEvent.click(flight)
+    expect(screen.getAllByText('62 200 ₽')).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
+    fireEvent.change(screen.getByRole('textbox', { name: 'Цена до' }), {
+      target: { value: '12000' },
+    })
+    expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
+  })
+  it('shows only flights in the selected class in both directions', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({
+        origin: 'Москва',
+        destination: 'Сочи',
+        departureDate: '2026-12-01',
+        returnDate: '2026-12-07',
+        isOneWay: false,
+        passengers: { adults: 2, children: 0, infants: 0, travelClass: 'business' },
+      }),
+    )
+    sessionStorage.setItem(
+      'selected-flights',
+      JSON.stringify({ outbound: 'aeroflot-1', return: 'return-aeroflot-1' }),
+    )
+    render(<FlightSelectionPage />)
+    expect(screen.getByRole('heading', { name: '1 рейс' })).toBeInTheDocument()
+    expect(screen.getByRole('article', { name: 'Рейс S7 Airlines' })).toBeInTheDocument()
+    expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Продолжить' })).toBeDisabled()
+    expect(screen.getAllByText('0 ₽')).toHaveLength(2)
+    fireEvent.click(screen.getByRole('article', { name: 'Рейс S7 Airlines' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(screen.getByRole('heading', { name: 'Выберите рейс обратно' })).toBeInTheDocument()
+    expect(screen.getByRole('article', { name: 'Рейс S7 Airlines' })).toBeInTheDocument()
+    expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
+  })
   it('passes one-way search data from the form to the flight page', () => {
     const { unmount } = render(
       <TripSearchForm
@@ -179,6 +231,34 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByText('Рейсы не найдены')).toBeInTheDocument()
     expect(screen.queryByRole('article')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Продолжить' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Сбросить фильтры' }))
+    expect(screen.getByRole('heading', { name: '6 рейсов' })).toBeInTheDocument()
+  })
+
+  it('shows selected outbound and return flights in the summary', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({
+        origin: 'Москва',
+        destination: 'Сочи',
+        departureDate: '2026-10-12',
+        returnDate: '2026-10-18',
+        isOneWay: false,
+        passengers: { adults: 2, children: 0, infants: 0, travelClass: 'economy' },
+      }),
+    )
+    render(<FlightSelectionPage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Рейс Победа' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
+    const summary = screen.getByLabelText('Выбранные рейсы')
+    expect(within(summary).getByText('12 октября 2026 г.')).toBeInTheDocument()
+    expect(within(summary).getByText('18 октября 2026 г.')).toBeInTheDocument()
+    expect(within(summary).getByText(/Победа · 12:45 - 16:25/)).toBeInTheDocument()
+    expect(within(summary).getByText(/Аэрофлот · 09:15 - 13:05/)).toBeInTheDocument()
+    expect(screen.getAllByText('45 260 ₽')).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')
   })
 
   it('preserves a selected flight when filters hide it', () => {
@@ -212,7 +292,7 @@ describe('FlightSelectionPage', () => {
     )
     render(<FlightSelectionPage />)
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
-    expect(screen.getAllByText('12 440 ₽').length).toBeGreaterThan(1)
+    expect(screen.getAllByText('24 880 ₽')).toHaveLength(2)
     fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
     expect(screen.getByRole('heading', { name: 'Выберите рейс туда' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')
