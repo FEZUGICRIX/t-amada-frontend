@@ -8,7 +8,6 @@ const airlines = ['Аэрофлот', 'Победа', 'S7 Airlines']
 
 function PanelHarness() {
   const [filters, setFilters] = useState<FlightFilters>({ ...DEFAULT_FLIGHT_FILTERS })
-  const [appliedFilters, setAppliedFilters] = useState<FlightFilters | null>(null)
   const [isOpen, setIsOpen] = useState(true)
 
   if (!isOpen) return <p>Панель закрыта</p>
@@ -16,16 +15,14 @@ function PanelHarness() {
   return (
     <>
       <FlightFiltersPanel
+        anchor={null}
         filters={filters}
         airlines={airlines}
         onChange={setFilters}
-        onApply={() => setAppliedFilters(filters)}
         onReset={() => setFilters({ ...DEFAULT_FLIGHT_FILTERS })}
         onClose={() => setIsOpen(false)}
       />
-      <output aria-label="Применённые параметры">
-        {appliedFilters ? JSON.stringify(appliedFilters) : 'Нет'}
-      </output>
+      <output aria-label="Применённые параметры">{JSON.stringify(filters)}</output>
     </>
   )
 }
@@ -45,7 +42,6 @@ describe('FlightFiltersPanel', () => {
     fireEvent.click(screen.getByRole('button', { name: /Авиакомпании/ }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'Аэрофлот' }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'S7 Airlines' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Показать результаты' }))
 
     expect(screen.getByRole('textbox', { name: 'Цена от' })).toHaveValue('10 000 ₽')
     expect(screen.getByRole('textbox', { name: 'Цена до' })).toHaveValue('15 000 ₽')
@@ -103,7 +99,7 @@ describe('FlightFiltersPanel', () => {
   it('keeps keyboard focus inside the panel', () => {
     render(<PanelHarness />)
     const closeButton = screen.getByRole('button', { name: 'Закрыть фильтры' })
-    const applyButton = screen.getByRole('button', { name: 'Показать результаты' })
+    const applyButton = screen.getByRole('button', { name: 'Сбросить' })
 
     applyButton.focus()
     fireEvent.keyDown(applyButton, { key: 'Tab' })

@@ -54,25 +54,67 @@ function formatPassengerSummary(passengers: PassengerSelection) {
 type ActivePanel = 'calendar' | 'passengers' | null
 
 type TripSearchFormProps = {
-  onSearch?: () => void
+  onSearch?: (search: {
+    origin: string
+    destination: string
+    departureDate: string | null
+    returnDate: string | null
+    isOneWay: boolean
+    passengers: PassengerSelection
+  }) => void
 }
 
 function TripSearchForm({ onSearch }: TripSearchFormProps) {
-  const [isOneWay, setIsOneWay] = useState(false)
+  const [savedSearch] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('trip-search')
+      return saved
+        ? (JSON.parse(saved) as {
+            origin: string
+            destination: string
+            departureDate: string | null
+            returnDate: string | null
+            isOneWay: boolean
+            passengers: PassengerSelection
+          })
+        : null
+    } catch {
+      return null
+    }
+  })
+  const [isOneWay, setIsOneWay] = useState(savedSearch?.isOneWay ?? false)
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('departure')
-  const [departureDate, setDepartureDate] = useState<Date | null>(null)
-  const [returnDate, setReturnDate] = useState<Date | null>(null)
-  const [passengers, setPassengers] = useState<PassengerSelection>({
-    adults: 2,
-    children: 0,
-    infants: 0,
-    travelClass: 'economy',
-  })
+  const [departureDate, setDepartureDate] = useState<Date | null>(
+    savedSearch?.departureDate ? new Date(`${savedSearch.departureDate}T00:00:00`) : null,
+  )
+  const [returnDate, setReturnDate] = useState<Date | null>(
+    savedSearch?.returnDate ? new Date(`${savedSearch.returnDate}T00:00:00`) : null,
+  )
+  const [passengers, setPassengers] = useState<PassengerSelection>(
+    savedSearch?.passengers ?? {
+      adults: 2,
+      children: 0,
+      infants: 0,
+      travelClass: 'economy',
+    },
+  )
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
-    onSearch?.()
+    const form = new FormData(evt.currentTarget)
+    const serializeDate = (date: Date | null) =>
+      date
+        ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        : null
+    onSearch?.({
+      origin: String(form.get('origin') || ''),
+      destination: String(form.get('destination') || ''),
+      departureDate: serializeDate(departureDate),
+      returnDate: isOneWay ? null : serializeDate(returnDate),
+      isOneWay,
+      passengers,
+    })
   }
 
   function openDepartureCalendar() {
@@ -131,7 +173,7 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
               className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
               name="origin"
               list="trip-cities"
-              defaultValue="Москва"
+              defaultValue={savedSearch?.origin ?? 'Москва'}
             />
           </label>
 
@@ -141,7 +183,7 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
               className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
               name="destination"
               list="trip-cities"
-              defaultValue="Екатеринбург"
+              defaultValue={savedSearch?.destination ?? 'Екатеринбург'}
             />
           </label>
 

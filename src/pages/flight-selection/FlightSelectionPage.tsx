@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import FlightFiltersPanel from './FlightFiltersPanel'
 import FlightList from './FlightList'
 import { DEFAULT_FLIGHT_FILTERS, filterAndSortFlights, type FlightFilters } from './flightFilters'
@@ -79,19 +79,58 @@ function getActiveFilterLabels(filters: FlightFilters) {
 }
 
 function FlightSelectionPage() {
+  const [filtersButton, setFiltersButton] = useState<HTMLButtonElement | null>(null)
+  const [search] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('trip-search')
+      return stored
+        ? (JSON.parse(stored) as {
+            origin: string
+            destination: string
+            departureDate: string | null
+            returnDate: string | null
+            isOneWay: boolean
+            passengers: { adults: number; children: number; infants: number; travelClass: string }
+          })
+        : null
+    } catch {
+      return null
+    }
+  })
+  const [isComplete, setIsComplete] = useState(false)
   const [direction, setDirection] = useState<FlightDirection>('outbound')
+  const [savedFlights] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem('selected-flights')
+      return stored
+        ? (JSON.parse(stored) as { outbound: string | null; return: string | null })
+        : null
+    } catch {
+      return null
+    }
+  })
   const [selectedOutboundFlightId, setSelectedOutboundFlightId] = useState<string | null>(
-    outboundFlights[0]?.id ?? null,
+    savedFlights?.outbound ?? null,
   )
   const [selectedReturnFlightId, setSelectedReturnFlightId] = useState<string | null>(
-    returnFlights[0]?.id ?? null,
+    savedFlights?.return ?? null,
   )
+  useEffect(() => {
+    sessionStorage.setItem(
+      'selected-flights',
+      JSON.stringify({ outbound: selectedOutboundFlightId, return: selectedReturnFlightId }),
+    )
+  }, [selectedOutboundFlightId, selectedReturnFlightId])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [draftFilters, setDraftFilters] = useState<FlightFilters>(createDefaultFilters)
   const [appliedFilters, setAppliedFilters] = useState<FlightFilters>(createDefaultFilters)
 
   const isOutbound = direction === 'outbound'
-  const flights = isOutbound ? outboundFlights : returnFlights
+  const matchesDemoRoute =
+    !search ||
+    (search.origin.trim().toLowerCase() === 'москва' &&
+      search.destination.trim().toLowerCase() === 'сочи')
+  const flights = matchesDemoRoute ? (isOutbound ? outboundFlights : returnFlights) : []
   const filteredFlights = filterAndSortFlights(flights, appliedFilters)
   const airlines = Array.from(new Set(flights.map((flight) => flight.airline)))
   const activeFilterLabels = getActiveFilterLabels(appliedFilters)
@@ -101,38 +140,22 @@ function FlightSelectionPage() {
     (flight) => flight.id === selectedOutboundFlightId,
   )
   const selectedReturnFlight = returnFlights.find((flight) => flight.id === selectedReturnFlightId)
-  const totalPrice = (selectedOutboundFlight?.price ?? 0) + (selectedReturnFlight?.price ?? 0)
+  const totalPrice =
+    (selectedOutboundFlight?.price ?? 0) +
+    (search?.isOneWay ? 0 : (selectedReturnFlight?.price ?? 0))
   const formattedTotalPrice = formatPrice(totalPrice)
 
   function handleContinue() {
-    if (isOutbound && selectedFlightId !== null) {
+    if (isOutbound && selectedFlightId !== null && !search?.isOneWay) {
       setDirection('return')
+    } else if (selectedFlightId !== null) {
+      setIsComplete(true)
     }
   }
 
-  function handleApplyFilters() {
-    const normalizedFilters = { ...draftFilters, airlines: [...draftFilters.airlines] }
-
-    if (
-      normalizedFilters.minPrice !== null &&
-      normalizedFilters.maxPrice !== null &&
-      normalizedFilters.minPrice > normalizedFilters.maxPrice
-    ) {
-      ;[normalizedFilters.minPrice, normalizedFilters.maxPrice] = [
-        normalizedFilters.maxPrice,
-        normalizedFilters.minPrice,
-      ]
-    }
-
-    const nextFilteredFlights = filterAndSortFlights(flights, normalizedFilters)
-
-    if (!nextFilteredFlights.some((flight) => flight.id === selectedFlightId)) {
-      selectFlight(null)
-    }
-
-    setDraftFilters(normalizedFilters)
-    setAppliedFilters(normalizedFilters)
-    setIsFiltersOpen(false)
+  function handleFilterChange(filters: FlightFilters) {
+    setDraftFilters(filters)
+    setAppliedFilters(filters)
   }
 
   function handleResetFilters() {
@@ -145,14 +168,44 @@ function FlightSelectionPage() {
   return (
     <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
       <header>
+        {isOutbound && (
+          <a
+            href="/"
+            className="mb-3 inline-flex h-10 items-center justify-center rounded-xl border border-[#cfd3d8] bg-white px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-[#f5f6f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
+          >
+            Назад
+          </a>
+        )}
+        {!isOutbound && (
+          <button
+            type="button"
+            onClick={() => {
+              setDirection('outbound')
+              setIsComplete(false)
+            }}
+            className="mb-3 inline-flex h-10 cursor-pointer items-center justify-center rounded-xl border border-[#cfd3d8] bg-white px-4 text-sm font-semibold text-text-primary transition-colors hover:bg-[#f5f6f7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
+          >
+            Назад
+          </button>
+        )}
         <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
           Выберите рейс {isOutbound ? 'туда' : 'обратно'}
         </h1>
 
         <p className="mt-1.5 text-[13px] leading-5 text-text-secondary md:mt-2 md:text-sm">
-          {isOutbound
-            ? 'Москва → Сочи · 12 октября · 2 взрослых · эконом'
-            : 'Сочи → Москва · 18 октября · 2 взрослых · эконом'}
+          {search
+            ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin} · ${(() => {
+                const date = isOutbound ? search.departureDate : search.returnDate
+                return date
+                  ? new Date(`${date}T00:00:00`).toLocaleDateString('ru-RU', {
+                      day: 'numeric',
+                      month: 'long',
+                    })
+                  : 'Дата не выбрана'
+              })()} · ${search.passengers.adults + search.passengers.children + search.passengers.infants} пассажиров · ${search.passengers.travelClass === 'business' ? 'бизнес' : 'эконом'}`
+            : isOutbound
+              ? 'Москва → Сочи · 12 октября · 2 взрослых · эконом'
+              : 'Сочи → Москва · 18 октября · 2 взрослых · эконом'}
         </p>
 
         <ol
@@ -182,12 +235,17 @@ function FlightSelectionPage() {
             </h2>
 
             <span className="inline-flex items-center rounded-full border border-[#dfe3e8] bg-[#f5f6f7] px-3 py-1.5 text-xs leading-4 font-semibold text-text-primary md:text-[13px]">
-              {isOutbound ? 'Москва → Сочи' : 'Сочи → Москва'}
+              {search
+                ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin}`
+                : isOutbound
+                  ? 'Москва → Сочи'
+                  : 'Сочи → Москва'}
             </span>
           </div>
 
           <div className="relative mt-3 w-fit">
             <button
+              ref={setFiltersButton}
               className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#cfd3d8] bg-white px-4 text-sm font-semibold text-text-primary hover:bg-[#f7f8f9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
               type="button"
               aria-expanded={isFiltersOpen}
@@ -216,10 +274,10 @@ function FlightSelectionPage() {
 
             {isFiltersOpen && (
               <FlightFiltersPanel
+                anchor={filtersButton}
                 filters={draftFilters}
                 airlines={airlines}
-                onChange={setDraftFilters}
-                onApply={handleApplyFilters}
+                onChange={handleFilterChange}
                 onReset={handleResetFilters}
                 onClose={() => setIsFiltersOpen(false)}
               />
@@ -251,7 +309,9 @@ function FlightSelectionPage() {
               <div className="rounded-2xl border border-[#e1e4e8] bg-white px-5 py-12 text-center">
                 <h3 className="text-lg font-semibold">Рейсы не найдены</h3>
                 <p className="mt-2 text-sm text-text-secondary">
-                  Измени параметры фильтров или сбрось их.
+                  {matchesDemoRoute
+                    ? 'Измени параметры фильтров или сбрось их.'
+                    : 'Тестовые рейсы доступны только по маршруту Москва — Сочи.'}
                 </p>
               </div>
             )}
@@ -276,11 +336,19 @@ function FlightSelectionPage() {
               <button
                 className="h-10 flex-none cursor-pointer rounded-xl border-0 bg-accent px-5 text-sm font-semibold text-text-primary hover:brightness-[0.97] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary disabled:hover:brightness-100 lg:w-full"
                 type="button"
-                disabled={selectedFlightId === null || filteredFlights.length === 0}
+                disabled={
+                  selectedFlightId === null ||
+                  !filteredFlights.some((flight) => flight.id === selectedFlightId)
+                }
                 onClick={handleContinue}
               >
                 Продолжить
               </button>
+              {isComplete && (
+                <p role="status" className="text-sm">
+                  Рейсы выбраны. Следующий этап пока недоступен.
+                </p>
+              )}
             </div>
           </div>
         </aside>

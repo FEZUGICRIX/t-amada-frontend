@@ -2,10 +2,10 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { BaggageFilter, FlightFilters, FlightSort, StopsFilter } from './flightFilters'
 
 type FlightFiltersPanelProps = {
+  anchor: HTMLButtonElement | null
   filters: FlightFilters
   airlines: string[]
   onChange: (filters: FlightFilters) => void
-  onApply: () => void
   onReset: () => void
   onClose: () => void
 }
@@ -23,10 +23,10 @@ function parseCurrencyInput(value: string) {
 }
 
 function FlightFiltersPanel({
+  anchor,
   filters,
   airlines,
   onChange,
-  onApply,
   onReset,
   onClose,
 }: FlightFiltersPanelProps) {
@@ -34,6 +34,34 @@ function FlightFiltersPanel({
   const panelRef = useRef<HTMLElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const onCloseRef = useRef(onClose)
+  const [desktopPosition, setDesktopPosition] = useState<{ top: number; left: number } | null>(null)
+
+  useEffect(() => {
+    function updatePosition() {
+      if (!anchor || window.innerWidth < 1024) {
+        setDesktopPosition(null)
+        return
+      }
+      const rect = anchor.getBoundingClientRect()
+      setDesktopPosition({
+        top: Math.max(
+          8,
+          Math.min(
+            rect.bottom + 8,
+            window.innerHeight - Math.min(600, window.innerHeight - 16) - 8,
+          ),
+        ),
+        left: Math.max(8, Math.min(rect.left, window.innerWidth - 428)),
+      })
+    }
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    window.addEventListener('scroll', updatePosition, true)
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      window.removeEventListener('scroll', updatePosition, true)
+    }
+  }, [anchor])
 
   useEffect(() => {
     onCloseRef.current = onClose
@@ -112,7 +140,10 @@ function FlightFiltersPanel({
       <section
         id="flight-filters-panel"
         ref={panelRef}
-        className="fixed inset-x-0 bottom-0 z-40 max-h-[88vh] overflow-y-auto rounded-t-3xl bg-white p-5 shadow-[0_-12px_40px_rgb(17_17_17_/_18%)] lg:absolute lg:top-[calc(100%_+_8px)] lg:right-auto lg:bottom-auto lg:left-0 lg:w-[420px] lg:rounded-2xl lg:border lg:border-[#dfe3e8] lg:shadow-[0_12px_40px_rgb(17_17_17_/_12%)]"
+        className="fixed inset-x-0 bottom-0 z-40 max-h-[min(90dvh,600px)] overflow-y-auto rounded-t-3xl bg-white p-4 shadow-[0_-12px_40px_rgb(17_17_17_/_18%)] lg:inset-auto lg:w-[420px] lg:rounded-2xl lg:border lg:border-[#dfe3e8] lg:shadow-[0_12px_40px_rgb(17_17_17_/_12%)]"
+        style={
+          desktopPosition ? { top: desktopPosition.top, left: desktopPosition.left } : undefined
+        }
         role="dialog"
         aria-modal="true"
         aria-label="Фильтры и сортировка"
@@ -131,7 +162,7 @@ function FlightFiltersPanel({
           </button>
         </div>
 
-        <fieldset className="mt-5 border-0 p-0">
+        <fieldset className="mt-3 border-0 p-0">
           <legend className="text-[13px] leading-4 font-semibold">Сортировка</legend>
           <div className="mt-2.5 grid grid-cols-3 gap-2">
             {(
@@ -158,7 +189,7 @@ function FlightFiltersPanel({
           </div>
         </fieldset>
 
-        <fieldset className="mt-5 border-0 p-0">
+        <fieldset className="mt-3 border-0 p-0">
           <legend className="text-[13px] leading-4 font-semibold">Цена</legend>
           <div className="mt-2.5 grid grid-cols-2 gap-3">
             {(
@@ -188,7 +219,7 @@ function FlightFiltersPanel({
           </div>
         </fieldset>
 
-        <fieldset className="mt-5 border-0 p-0">
+        <fieldset className="mt-3 border-0 p-0">
           <legend className="text-[13px] leading-4 font-semibold">Маршрут</legend>
           <div className="mt-2.5 grid grid-cols-2 gap-2">
             <button
@@ -218,7 +249,7 @@ function FlightFiltersPanel({
           </div>
         </fieldset>
 
-        <fieldset className="mt-5 border-0 p-0">
+        <fieldset className="mt-3 border-0 p-0">
           <legend className="text-[13px] leading-4 font-semibold">Багаж</legend>
           <div className="mt-2.5 grid grid-cols-2 gap-2">
             {(
@@ -244,7 +275,7 @@ function FlightFiltersPanel({
           </div>
         </fieldset>
 
-        <div className="relative mt-5">
+        <div className="mt-3">
           <span className="text-[13px] leading-4 font-semibold">Авиакомпании</span>
           <button
             className="mt-2.5 flex h-14 w-full items-center justify-between rounded-xl border border-[#dfe3e8] px-3.5 text-left transition-colors hover:bg-[#f7f8f9]"
@@ -263,7 +294,7 @@ function FlightFiltersPanel({
           </button>
 
           {isAirlinesOpen && (
-            <div className="absolute inset-x-0 top-full z-10 mt-1 grid max-h-48 gap-2 overflow-y-auto rounded-xl border border-[#dfe3e8] bg-white p-3.5 shadow-lg">
+            <div className="mt-1 grid gap-1 rounded-xl border border-[#dfe3e8] bg-white p-3">
               {airlines.map((airline) => (
                 <label className="flex min-h-8 items-center gap-2.5 text-sm" key={airline}>
                   <input
@@ -278,20 +309,13 @@ function FlightFiltersPanel({
           )}
         </div>
 
-        <div className="mt-5 grid grid-cols-[0.9fr_1.1fr] gap-3">
+        <div className="sticky bottom-[-16px] -mx-4 mt-3 bg-white px-4 pt-3 pb-4">
           <button
-            className="h-12 rounded-xl border-0 bg-[#e7e9ec] text-sm font-semibold transition-colors hover:bg-[#dfe2e6]"
+            className="h-11 w-full rounded-xl border-0 bg-[#e7e9ec] text-sm font-semibold transition-colors hover:bg-[#dfe2e6]"
             type="button"
             onClick={onReset}
           >
             Сбросить
-          </button>
-          <button
-            className="h-12 whitespace-nowrap rounded-xl border-0 bg-accent px-4 text-sm font-semibold transition-[filter] hover:brightness-[0.97]"
-            type="button"
-            onClick={onApply}
-          >
-            Показать результаты
           </button>
         </div>
       </section>
