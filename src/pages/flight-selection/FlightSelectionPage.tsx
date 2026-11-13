@@ -4,10 +4,50 @@ import FlightList from './FlightList'
 import { DEFAULT_FLIGHT_FILTERS, filterAndSortFlights, type FlightFilters } from './flightFilters'
 import formatPrice from './formatPrice'
 import { outboundFlights, returnFlights } from './mockFlights'
+import type { Flight } from './types'
 
 type FlightDirection = 'outbound' | 'return'
 
 const bookingSteps = ['Авиабилет', 'Отель', 'Страховка', 'Трансфер']
+
+function FlightSummary({
+  title,
+  flight,
+  date,
+}: {
+  title: string
+  flight: Flight | undefined
+  date: string | null | undefined
+}) {
+  const formattedDate = date
+    ? new Date(`${date}T00:00:00`).toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : 'Дата не выбрана'
+
+  return (
+    <div className="rounded-xl bg-[#f7f8f9] p-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-text-secondary">
+        <span className="font-semibold text-text-primary">{title}</span>
+        <span>{formattedDate}</span>
+      </div>
+      {flight ? (
+        <div className="mt-2">
+          <p className="break-words text-sm font-semibold">
+            {flight.departure.city} → {flight.arrival.city}
+          </p>
+          <p className="mt-1 break-words text-xs text-text-secondary">
+            {flight.airline} · {flight.departure.time} - {flight.arrival.time}
+          </p>
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-text-secondary">Рейс не выбран</p>
+      )}
+    </div>
+  )
+}
 
 function createDefaultFilters(): FlightFilters {
   return { ...DEFAULT_FLIGHT_FILTERS, airlines: [] }
@@ -110,10 +150,22 @@ function FlightSelectionPage() {
     }
   })
   const [selectedOutboundFlightId, setSelectedOutboundFlightId] = useState<string | null>(
-    savedFlights?.outbound ?? null,
+    outboundFlights.some(
+      (flight) =>
+        flight.id === savedFlights?.outbound &&
+        (!search || flight.travelClass === search.passengers.travelClass),
+    )
+      ? (savedFlights?.outbound ?? null)
+      : null,
   )
   const [selectedReturnFlightId, setSelectedReturnFlightId] = useState<string | null>(
-    savedFlights?.return ?? null,
+    returnFlights.some(
+      (flight) =>
+        flight.id === savedFlights?.return &&
+        (!search || flight.travelClass === search.passengers.travelClass),
+    )
+      ? (savedFlights?.return ?? null)
+      : null,
   )
   useEffect(() => {
     sessionStorage.setItem(
@@ -126,11 +178,17 @@ function FlightSelectionPage() {
   const [appliedFilters, setAppliedFilters] = useState<FlightFilters>(createDefaultFilters)
 
   const isOutbound = direction === 'outbound'
+  // Local demo prices are per adult or child; infants do not add to the price.
+  const payingPassengers = search ? search.passengers.adults + search.passengers.children : 1
   const matchesDemoRoute =
     !search ||
     (search.origin.trim().toLowerCase() === 'москва' &&
       search.destination.trim().toLowerCase() === 'сочи')
-  const flights = matchesDemoRoute ? (isOutbound ? outboundFlights : returnFlights) : []
+  const flights = matchesDemoRoute
+    ? (isOutbound ? outboundFlights : returnFlights).filter(
+        (flight) => !search || flight.travelClass === search.passengers.travelClass,
+      )
+    : []
   const filteredFlights = filterAndSortFlights(flights, appliedFilters)
   const airlines = Array.from(new Set(flights.map((flight) => flight.airline)))
   const activeFilterLabels = getActiveFilterLabels(appliedFilters)
@@ -141,8 +199,9 @@ function FlightSelectionPage() {
   )
   const selectedReturnFlight = returnFlights.find((flight) => flight.id === selectedReturnFlightId)
   const totalPrice =
-    (selectedOutboundFlight?.price ?? 0) +
-    (search?.isOneWay ? 0 : (selectedReturnFlight?.price ?? 0))
+    ((selectedOutboundFlight?.price ?? 0) +
+      (search?.isOneWay ? 0 : (selectedReturnFlight?.price ?? 0))) *
+    payingPassengers
   const formattedTotalPrice = formatPrice(totalPrice)
 
   function handleContinue() {
@@ -304,6 +363,7 @@ function FlightSelectionPage() {
                 flights={filteredFlights}
                 selectedFlightId={selectedFlightId}
                 onSelect={selectFlight}
+                groupPrice={!!search}
               />
             ) : (
               <div className="rounded-2xl border border-[#e1e4e8] bg-white px-5 py-12 text-center">
@@ -311,8 +371,17 @@ function FlightSelectionPage() {
                 <p className="mt-2 text-sm text-text-secondary">
                   {matchesDemoRoute
                     ? 'Измени параметры фильтров или сбрось их.'
-                    : 'Тестовые рейсы доступны только по маршруту Москва — Сочи.'}
+                    : 'Тестовые рейсы доступны только по маршруту Москва - Сочи.'}
                 </p>
+                {matchesDemoRoute && activeFilterLabels.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleResetFilters}
+                    className="mt-4 rounded-xl bg-accent px-4 py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    Сбросить фильтры
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -321,6 +390,21 @@ function FlightSelectionPage() {
         <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white py-3 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:mt-[128px] lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]">
           <div className="mx-auto flex w-[calc(100%_-_36px)] items-center gap-4 md:w-[calc(100%_-_64px)] lg:block lg:w-auto">
             <h2 className="hidden text-xl leading-7 font-semibold lg:block">Ваша поездка</h2>
+
+            <div className="mt-3 hidden space-y-2 text-sm lg:block" aria-label="Выбранные рейсы">
+              <FlightSummary
+                title="Туда"
+                flight={selectedOutboundFlight}
+                date={search?.departureDate}
+              />
+              {!search?.isOneWay && (
+                <FlightSummary
+                  title="Обратно"
+                  flight={selectedReturnFlight}
+                  date={search?.returnDate}
+                />
+              )}
+            </div>
 
             <div className="mt-3 hidden items-center justify-between border-b border-[#e1e4e8] pb-3 text-xs lg:flex">
               <span>Авиабилет</span>

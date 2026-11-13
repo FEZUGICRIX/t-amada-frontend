@@ -6,11 +6,19 @@ type FlightListProps = {
   flights: Flight[]
   selectedFlightId: string | null
   onSelect: (flightId: string) => void
+  isLoading?: boolean
+  groupPrice?: boolean
 }
 
 const FLIGHTS_PER_PAGE = 3
 
-function FlightList({ flights, selectedFlightId, onSelect }: FlightListProps) {
+function FlightList({
+  flights,
+  selectedFlightId,
+  onSelect,
+  isLoading = false,
+  groupPrice = false,
+}: FlightListProps) {
   const [visibleCount, setVisibleCount] = useState(FLIGHTS_PER_PAGE)
   const loaderRef = useRef<HTMLDivElement>(null)
 
@@ -24,7 +32,8 @@ function FlightList({ flights, selectedFlightId, onSelect }: FlightListProps) {
   useEffect(() => {
     const loader = loaderRef.current
 
-    if (!loader || !hasMoreFlights || typeof IntersectionObserver === 'undefined') return
+    if (isLoading || !loader || !hasMoreFlights || typeof IntersectionObserver === 'undefined')
+      return
 
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -35,7 +44,29 @@ function FlightList({ flights, selectedFlightId, onSelect }: FlightListProps) {
     observer.observe(loader)
 
     return () => observer.disconnect()
-  }, [hasMoreFlights, flights.length])
+  }, [hasMoreFlights, flights.length, isLoading])
+
+  if (isLoading) {
+    return (
+      <div role="status" aria-label="Загрузка рейсов" className="flex flex-col gap-2">
+        <span className="sr-only">Загрузка рейсов</span>
+        {[0, 1, 2].map((item) => (
+          <div
+            key={item}
+            aria-hidden="true"
+            className="flex min-h-28 items-center gap-4 rounded-xl border border-[#e1e4e8] bg-white p-4 motion-safe:animate-pulse"
+          >
+            <div className="size-11 shrink-0 rounded-lg bg-[#e7e9ec]" />
+            <div className="flex flex-1 flex-col gap-3">
+              <div className="h-4 w-1/3 rounded bg-[#e7e9ec]" />
+              <div className="h-4 w-2/3 rounded bg-[#e7e9ec]" />
+              <div className="h-3 w-1/2 rounded bg-[#e7e9ec]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -45,6 +76,7 @@ function FlightList({ flights, selectedFlightId, onSelect }: FlightListProps) {
             flight={flight}
             isSelected={flight.id === selectedFlightId}
             onSelect={onSelect}
+            groupPrice={groupPrice}
             key={flight.id}
           />
         ))}

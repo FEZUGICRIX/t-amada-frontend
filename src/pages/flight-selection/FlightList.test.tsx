@@ -4,6 +4,11 @@ import FlightList from './FlightList'
 import { outboundFlights } from './mockFlights'
 
 describe('FlightList', () => {
+  it('shows accessible placeholders while flights are loading', () => {
+    render(<FlightList flights={[]} selectedFlightId={null} onSelect={() => undefined} isLoading />)
+    expect(screen.getByRole('status', { name: 'Загрузка рейсов' })).toBeInTheDocument()
+    expect(screen.queryByRole('article')).not.toBeInTheDocument()
+  })
   let intersectionCallback: IntersectionObserverCallback
 
   beforeEach(() => {
