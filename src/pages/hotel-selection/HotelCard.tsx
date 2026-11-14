@@ -39,7 +39,7 @@ function HotelCard({
       </div>
       <div className="flex items-end justify-between gap-3 sm:flex-col">
         <div className="text-right">
-          <strong className="text-base">{formatPrice(hotel.price)}</strong>
+          <strong className="text-base">от {formatPrice(hotel.price)}</strong>
         </div>
         <button
           type="button"

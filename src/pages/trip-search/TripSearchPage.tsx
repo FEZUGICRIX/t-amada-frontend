@@ -9,6 +9,7 @@ function TripSearchPage() {
       onSearch={(search) => {
         sessionStorage.setItem('trip-search', JSON.stringify(search))
         sessionStorage.removeItem('selected-flights')
+        sessionStorage.removeItem('selected-room')
         void navigate({ to: '/flights' })
       }}
     />
