@@ -5,7 +5,7 @@ import FlightCard from './FlightCard'
 import { outboundFlights } from './mockFlights'
 
 describe('FlightCard', () => {
-  it('allows selecting a flight using the keyboard', async () => {
+  it('позволяет выбрать рейс с клавиатуры', async () => {
     const user = userEvent.setup()
     const onSelect = vi.fn()
     render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={onSelect} />)
@@ -14,7 +14,7 @@ describe('FlightCard', () => {
     await user.keyboard('{Enter}')
     expect(onSelect).toHaveBeenCalledOnce()
   })
-  it('renders structured flight data', () => {
+  it('отображает данные рейса', () => {
     render(<FlightCard flight={outboundFlights[2]} isSelected={false} onSelect={() => undefined} />)
 
     expect(screen.getByRole('heading', { name: 'Россия + Аэрофлот' })).toBeInTheDocument()
@@ -27,13 +27,13 @@ describe('FlightCard', () => {
     expect(screen.getByText('11 980 ₽')).toBeInTheDocument()
   })
 
-  it('marks a flight without stops as direct', () => {
+  it('обозначает рейс без пересадок как прямой', () => {
     render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={() => undefined} />)
 
     expect(screen.getByText('прямой рейс')).toBeInTheDocument()
   })
 
-  it('passes the flight id when selected', () => {
+  it('передаёт идентификатор выбранного рейса', () => {
     const onSelect = vi.fn()
 
     render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={onSelect} />)
@@ -43,7 +43,7 @@ describe('FlightCard', () => {
     expect(onSelect).toHaveBeenCalledWith('aeroflot-1')
   })
 
-  it('selects the flight when the card is clicked', () => {
+  it('выбирает рейс по нажатию на карточку', () => {
     const onSelect = vi.fn()
 
     render(<FlightCard flight={outboundFlights[0]} isSelected={false} onSelect={onSelect} />)

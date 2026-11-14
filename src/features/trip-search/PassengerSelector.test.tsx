@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import PassengerSelector from './PassengerSelector'
 
 describe('PassengerSelector', () => {
-  it('increments the number of adults', () => {
+  it('увеличивает количество взрослых', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -28,7 +28,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy',
     })
   })
-  it('does not allow fewer than one adult', () => {
+  it('не позволяет выбрать меньше одного взрослого', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -50,7 +50,7 @@ describe('PassengerSelector', () => {
 
     expect(onChange).not.toHaveBeenCalled()
   })
-  it('does not allow more than ten passengers', () => {
+  it('не позволяет выбрать больше десяти пассажиров', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -72,7 +72,7 @@ describe('PassengerSelector', () => {
 
     expect(onChange).not.toHaveBeenCalled()
   })
-  it('increments the number of children', () => {
+  it('увеличивает количество детей', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -97,7 +97,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy',
     })
   })
-  it('does not allow fewer than zero children', () => {
+  it('не позволяет выбрать отрицательное количество детей', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -119,7 +119,7 @@ describe('PassengerSelector', () => {
 
     expect(onChange).not.toHaveBeenCalled()
   })
-  it('increments the number of infants', () => {
+  it('увеличивает количество младенцев', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -144,7 +144,7 @@ describe('PassengerSelector', () => {
       travelClass: 'economy',
     })
   })
-  it('does not allow more infants than adults', () => {
+  it('не позволяет выбрать младенцев больше, чем взрослых', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -166,7 +166,7 @@ describe('PassengerSelector', () => {
 
     expect(onChange).not.toHaveBeenCalled()
   })
-  it('selects business class', () => {
+  it('выбирает бизнес-класс', () => {
     const onChange = vi.fn()
 
     const value = {
@@ -191,7 +191,7 @@ describe('PassengerSelector', () => {
       travelClass: 'business',
     })
   })
-  it('selects economy class', () => {
+  it('выбирает экономкласс', () => {
     const onChange = vi.fn()
 
     const value = {

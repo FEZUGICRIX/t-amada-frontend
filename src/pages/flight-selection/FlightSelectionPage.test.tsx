@@ -5,7 +5,7 @@ import TripSearchForm from '@/features/trip-search/TripSearchForm'
 
 describe('FlightSelectionPage', () => {
   beforeEach(() => sessionStorage.clear())
-  it('shows a per-ticket price and totals adults and children while infants travel free', () => {
+  it('показывает цену за билет и рассчитывает итог для взрослых и детей без оплаты младенцев', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({
@@ -29,7 +29,7 @@ describe('FlightSelectionPage', () => {
     })
     expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
   })
-  it('shows only flights in the selected class in both directions', () => {
+  it('показывает рейсы выбранного класса в обоих направлениях', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({
@@ -57,7 +57,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByRole('article', { name: 'Рейс S7 Airlines' })).toBeInTheDocument()
     expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
   })
-  it('passes one-way search data from the form to the flight page', () => {
+  it('передаёт параметры поездки в одну сторону на страницу рейсов', () => {
     const { unmount } = render(
       <TripSearchForm
         onSearch={(search) => sessionStorage.setItem('trip-search', JSON.stringify(search))}
@@ -73,7 +73,7 @@ describe('FlightSelectionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
     expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')
   })
-  it('renders the page heading', () => {
+  it('отображает заголовок страницы', () => {
     render(<FlightSelectionPage />)
 
     expect(
@@ -83,12 +83,12 @@ describe('FlightSelectionPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the trip summary', () => {
+  it('отображает параметры поездки', () => {
     render(<FlightSelectionPage />)
 
     expect(screen.getByText('Москва → Сочи · 12 октября · 2 взрослых · эконом')).toBeInTheDocument()
   })
-  it('renders the available flights', () => {
+  it('отображает доступные рейсы', () => {
     render(<FlightSelectionPage />)
 
     expect(screen.getByText('6 рейсов')).toBeInTheDocument()
@@ -99,7 +99,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByText('Россия + Аэрофлот')).toBeInTheDocument()
   })
 
-  it('renders the trip price summary', () => {
+  it('отображает итоговую стоимость поездки', () => {
     render(<FlightSelectionPage />)
 
     expect(
@@ -112,7 +112,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getAllByText('0 ₽')).toHaveLength(2)
   })
 
-  it('updates the total after selecting another flight', () => {
+  it('обновляет итог при выборе другого рейса', () => {
     render(<FlightSelectionPage />)
 
     const pobedaCard = screen.getByRole('article', { name: 'Рейс Победа' })
@@ -122,7 +122,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getAllByText('9 840 ₽').length).toBeGreaterThanOrEqual(2)
   })
 
-  it('selects a flight from the list', () => {
+  it('выбирает рейс из списка', () => {
     render(<FlightSelectionPage />)
 
     const pobedaCard = screen.getByRole('article', { name: 'Рейс Победа' })
@@ -135,7 +135,7 @@ describe('FlightSelectionPage', () => {
     )
   })
 
-  it('shows return flights after continuing', () => {
+  it('показывает обратные рейсы после продолжения', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
@@ -149,7 +149,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByText('Сочи → Москва')).toBeInTheDocument()
   })
 
-  it('keeps draft filters after closing and reopening the panel', () => {
+  it('сохраняет фильтры при закрытии и открытии панели', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
@@ -162,7 +162,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByRole('textbox', { name: 'Цена от' })).toHaveValue('12 000 ₽')
   })
 
-  it('closes filters with Escape and returns focus to the trigger', () => {
+  it('закрывает фильтры по Escape и возвращает фокус на кнопку', () => {
     render(<FlightSelectionPage />)
 
     const filtersButton = screen.getByRole('button', { name: /Фильтры и сортировка/ })
@@ -177,7 +177,7 @@ describe('FlightSelectionPage', () => {
     expect(filtersButton).toHaveFocus()
   })
 
-  it('applies filters and updates the result count', () => {
+  it('применяет фильтры и обновляет количество результатов', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
@@ -190,7 +190,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.queryByLabelText('Фильтры и сортировка')).not.toBeInTheDocument()
   })
 
-  it('sorts the visible flights by price', () => {
+  it('сортирует рейсы по цене', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
@@ -200,7 +200,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getAllByRole('article')[0]).toHaveAccessibleName('Рейс Победа')
   })
 
-  it('resets applied filters and restores every flight', () => {
+  it('сбрасывает фильтры и восстанавливает список рейсов', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
@@ -218,7 +218,7 @@ describe('FlightSelectionPage', () => {
     )
   })
 
-  it('shows an empty state when no flight matches', () => {
+  it('показывает пустое состояние, если рейсы не найдены', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
@@ -235,7 +235,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByRole('heading', { name: '6 рейсов' })).toBeInTheDocument()
   })
 
-  it('shows selected outbound and return flights in the summary', () => {
+  it('показывает выбранные рейсы туда и обратно в блоке поездки', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({
@@ -261,7 +261,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')
   })
 
-  it('preserves a selected flight when filters hide it', () => {
+  it('сохраняет выбранный рейс, скрытый фильтрами', () => {
     render(<FlightSelectionPage />)
 
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
@@ -278,7 +278,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.getAllByText('12 440 ₽')).toHaveLength(2)
   })
 
-  it('skips return flights and excludes their price for a one-way trip', () => {
+  it('пропускает обратный рейс и его стоимость для поездки в одну сторону', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({
@@ -299,7 +299,7 @@ describe('FlightSelectionPage', () => {
     sessionStorage.removeItem('trip-search')
   })
 
-  it('returns to the selected outbound flight', () => {
+  it('возвращает к выбранному рейсу туда', () => {
     render(<FlightSelectionPage />)
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Победа' }))
     fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))

@@ -19,8 +19,8 @@ function Harness() {
   )
 }
 
-describe('hotel filter panel', () => {
-  it('updates selections, resets, and closes with Escape', () => {
+describe('Панель фильтров отелей', () => {
+  it('изменяет и сбрасывает фильтры, закрывается по Escape', () => {
     render(<Harness />)
     fireEvent.click(screen.getByRole('button', { name: 'Завтрак включён' }))
     expect(screen.getByRole('button', { name: 'Завтрак включён' })).toHaveAttribute(

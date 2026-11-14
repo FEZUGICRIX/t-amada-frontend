@@ -12,7 +12,7 @@ describe('TripSearchForm', () => {
     vi.useRealTimers()
   })
 
-  it('offers the same city suggestions for both route fields', () => {
+  it('предлагает одинаковые города для обоих полей маршрута', () => {
     render(<TripSearchForm />)
 
     expect(screen.getByRole('combobox', { name: 'Откуда' })).toHaveAttribute('list', 'trip-cities')
@@ -37,7 +37,7 @@ describe('TripSearchForm', () => {
     ])
   })
 
-  it('disables the return date for a one-way trip', () => {
+  it('отключает дату возвращения для поездки в одну сторону', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(
@@ -49,7 +49,7 @@ describe('TripSearchForm', () => {
     expect(screen.getByRole('button', { name: /Обратно/ })).toBeDisabled()
   })
 
-  it('keeps the selected return date after toggling one-way mode', () => {
+  it('сохраняет обратную дату при переключении режима', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
@@ -71,7 +71,7 @@ describe('TripSearchForm', () => {
     expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('8 ноября')
   })
 
-  it('shows empty date fields initially', () => {
+  it('изначально показывает пустые поля дат', () => {
     render(<TripSearchForm />)
 
     expect(screen.getByRole('button', { name: /Когда/ })).toHaveTextContent('Выберите дату')
@@ -79,7 +79,7 @@ describe('TripSearchForm', () => {
     expect(screen.getByRole('button', { name: /Обратно/ })).toHaveTextContent('Выберите дату')
   })
 
-  it('opens the current month calendar from the departure button', () => {
+  it('открывает календарь текущего месяца по полю вылета', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
@@ -95,7 +95,7 @@ describe('TripSearchForm', () => {
     ).toHaveAttribute('aria-current', 'date')
   })
 
-  it('keeps the calendar open after selecting a date range', () => {
+  it('не закрывает календарь после выбора диапазона', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
@@ -118,7 +118,7 @@ describe('TripSearchForm', () => {
     expect(screen.queryByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
   })
 
-  it('keeps the calendar open after selecting a one-way date', () => {
+  it('не закрывает календарь после выбора даты в одну сторону', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(
@@ -135,7 +135,7 @@ describe('TripSearchForm', () => {
 
     expect(screen.queryByRole('dialog', { name: 'Выбор даты' })).toBeInTheDocument()
   })
-  it('opens the passenger selector and closes the calendar', () => {
+  it('открывает выбор пассажиров и закрывает календарь', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
@@ -156,7 +156,7 @@ describe('TripSearchForm', () => {
       }),
     ).toBeInTheDocument()
   })
-  it('updates the passenger summary', () => {
+  it('обновляет количество пассажиров', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(
@@ -177,7 +177,7 @@ describe('TripSearchForm', () => {
       }),
     ).toBeInTheDocument()
   })
-  it('updates the class in the passenger summary', () => {
+  it('обновляет класс обслуживания', () => {
     render(<TripSearchForm />)
 
     fireEvent.click(
@@ -199,7 +199,7 @@ describe('TripSearchForm', () => {
     ).toBeInTheDocument()
   })
 
-  it('starts the flight search after submitting the form', () => {
+  it('запускает поиск при отправке формы', () => {
     const onSearch = vi.fn()
 
     render(<TripSearchForm onSearch={onSearch} />)

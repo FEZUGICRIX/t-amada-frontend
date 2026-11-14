@@ -46,7 +46,7 @@ function createFilters(overrides: Partial<FlightFilters>): FlightFilters {
 }
 
 describe('filterAndSortFlights', () => {
-  it('keeps the source order with default filters without mutating the source', () => {
+  it('сохраняет порядок и исходные данные при фильтрах по умолчанию', () => {
     const result = filterAndSortFlights(flights, DEFAULT_FLIGHT_FILTERS)
 
     expect(result.map((flight) => flight.id)).toEqual([
@@ -57,13 +57,13 @@ describe('filterAndSortFlights', () => {
     expect(result).not.toBe(flights)
   })
 
-  it('includes flights on both price boundaries', () => {
+  it('включает рейсы с ценой на границах диапазона', () => {
     const result = filterAndSortFlights(flights, createFilters({ minPrice: 100, maxPrice: 200 }))
 
     expect(result.map((flight) => flight.id)).toEqual(['cheap-transfer', 'middle-direct'])
   })
 
-  it('filters direct flights and flights with stops', () => {
+  it('фильтрует прямые рейсы и рейсы с пересадками', () => {
     const directFlights = filterAndSortFlights(flights, createFilters({ stops: 'direct' }))
     const flightsWithStops = filterAndSortFlights(flights, createFilters({ stops: 'with-stops' }))
 
@@ -71,7 +71,7 @@ describe('filterAndSortFlights', () => {
     expect(flightsWithStops.map((flight) => flight.id)).toEqual(['cheap-transfer'])
   })
 
-  it('filters flights by baggage', () => {
+  it('фильтрует рейсы по багажу', () => {
     const withBaggage = filterAndSortFlights(flights, createFilters({ baggage: 'with' }))
     const withoutBaggage = filterAndSortFlights(flights, createFilters({ baggage: 'without' }))
 
@@ -79,7 +79,7 @@ describe('filterAndSortFlights', () => {
     expect(withoutBaggage.map((flight) => flight.id)).toEqual(['expensive-direct'])
   })
 
-  it('uses OR logic for airlines and AND logic between filter groups', () => {
+  it('использует ИЛИ для авиакомпаний и И между группами фильтров', () => {
     const result = filterAndSortFlights(
       flights,
       createFilters({
@@ -93,7 +93,7 @@ describe('filterAndSortFlights', () => {
     expect(result.map((flight) => flight.id)).toEqual(['middle-direct'])
   })
 
-  it('keeps every selected airline when several airlines match', () => {
+  it('сохраняет все подходящие авиакомпании', () => {
     const result = filterAndSortFlights(
       flights,
       createFilters({ airlines: ['Аэрофлот', 'S7 Airlines'] }),
@@ -102,7 +102,7 @@ describe('filterAndSortFlights', () => {
     expect(result.map((flight) => flight.id)).toEqual(['expensive-direct', 'middle-direct'])
   })
 
-  it('sorts by price without changing the source array', () => {
+  it('сортирует по цене без изменения исходного массива', () => {
     const ascending = filterAndSortFlights(flights, createFilters({ sort: 'price-asc' }))
     const descending = filterAndSortFlights(flights, createFilters({ sort: 'price-desc' }))
 

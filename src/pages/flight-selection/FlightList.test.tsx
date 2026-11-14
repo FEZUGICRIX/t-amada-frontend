@@ -4,7 +4,7 @@ import FlightList from './FlightList'
 import { outboundFlights } from './mockFlights'
 
 describe('FlightList', () => {
-  it('shows accessible placeholders while flights are loading', () => {
+  it('показывает доступное состояние загрузки рейсов', () => {
     render(<FlightList flights={[]} selectedFlightId={null} onSelect={() => undefined} isLoading />)
     expect(screen.getByRole('status', { name: 'Загрузка рейсов' })).toBeInTheDocument()
     expect(screen.queryByRole('article')).not.toBeInTheDocument()
@@ -24,7 +24,7 @@ describe('FlightList', () => {
 
     vi.stubGlobal('IntersectionObserver', IntersectionObserverMock)
   })
-  it('renders the first three flights initially', () => {
+  it('изначально показывает первые три рейса', () => {
     render(
       <FlightList flights={outboundFlights} selectedFlightId={null} onSelect={() => undefined} />,
     )
@@ -33,7 +33,7 @@ describe('FlightList', () => {
     expect(screen.getByRole('button', { name: 'Показать ещё' })).toBeInTheDocument()
   })
 
-  it('renders the next flights after clicking show more', () => {
+  it('показывает следующие рейсы по кнопке', () => {
     render(
       <FlightList flights={outboundFlights} selectedFlightId={null} onSelect={() => undefined} />,
     )
@@ -44,7 +44,7 @@ describe('FlightList', () => {
     expect(screen.queryByRole('button', { name: 'Показать ещё' })).not.toBeInTheDocument()
   })
 
-  it('loads the next flights when the loader enters the viewport', () => {
+  it('подгружает рейсы при прокрутке', () => {
     render(
       <FlightList flights={outboundFlights} selectedFlightId={null} onSelect={() => undefined} />,
     )

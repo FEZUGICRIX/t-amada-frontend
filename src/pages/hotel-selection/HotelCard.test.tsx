@@ -4,7 +4,7 @@ import HotelCard from './HotelCard'
 import { hotels } from './hotels'
 
 describe('HotelCard', () => {
-  it('shows the hotel and its amenities', () => {
+  it('показывает отель и его удобства', () => {
     const onSelect = vi.fn()
     render(<HotelCard hotel={hotels[0]} onSelect={onSelect} />)
     expect(screen.getByRole('heading', { name: hotels[0].name })).toBeInTheDocument()
