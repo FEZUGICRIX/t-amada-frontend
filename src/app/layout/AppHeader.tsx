@@ -42,6 +42,7 @@ function AppHeader() {
         </a>
         <a
           href="/trips"
+          aria-label="Мои поездки"
           className="inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm leading-5 font-medium text-text-secondary no-underline transition-[background-color,color,transform] duration-150 hover:bg-white hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px"
         >
           <svg
@@ -58,7 +59,7 @@ function AppHeader() {
             <rect width="18" height="13" x="3" y="7" rx="3" />
             <path d="M3 12h18" />
           </svg>
-          <span className="whitespace-nowrap">Мои поездки</span>
+          <span className="hidden whitespace-nowrap min-[400px]:inline">Мои поездки</span>
         </a>
       </nav>
     </header>
