@@ -5,10 +5,9 @@ import { DEFAULT_FLIGHT_FILTERS, filterAndSortFlights, type FlightFilters } from
 import formatPrice from './formatPrice'
 import { outboundFlights, returnFlights } from './mockFlights'
 import type { Flight } from './types'
+import BookingSteps from '@/shared/BookingSteps'
 
 type FlightDirection = 'outbound' | 'return'
-
-const bookingSteps = ['Авиабилет', 'Отель', 'Страховка', 'Трансфер']
 
 function FlightSummary({
   title,
@@ -248,43 +247,29 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
             Назад
           </button>
         )}
-        <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
-          Выберите рейс {isOutbound ? 'туда' : 'обратно'}
-        </h1>
+        <div className="rounded-2xl bg-[radial-gradient(circle_at_90%_0%,rgb(255_221_45_/_22%),transparent_42%),linear-gradient(120deg,#fffdf8,#fff9e4)] p-4 md:p-6">
+          <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
+            Выберите рейс {isOutbound ? 'туда' : 'обратно'}
+          </h1>
 
-        <p className="mt-1.5 text-[13px] leading-5 text-text-secondary md:mt-2 md:text-sm">
-          {search
-            ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin} · ${(() => {
-                const date = isOutbound ? search.departureDate : search.returnDate
-                return date
-                  ? new Date(`${date}T00:00:00`).toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'long',
-                    })
-                  : 'Дата не выбрана'
-              })()} · ${search.passengers.adults + search.passengers.children + search.passengers.infants} пассажиров · ${search.passengers.travelClass === 'business' ? 'бизнес' : 'эконом'}`
-            : isOutbound
-              ? 'Москва → Сочи · 12 октября · 2 взрослых · эконом'
-              : 'Сочи → Москва · 18 октября · 2 взрослых · эконом'}
-        </p>
+          <p className="mt-1.5 text-[13px] leading-5 text-text-secondary md:mt-2 md:text-sm">
+            {search
+              ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin} · ${(() => {
+                  const date = isOutbound ? search.departureDate : search.returnDate
+                  return date
+                    ? new Date(`${date}T00:00:00`).toLocaleDateString('ru-RU', {
+                        day: 'numeric',
+                        month: 'long',
+                      })
+                    : 'Дата не выбрана'
+                })()} · ${search.passengers.adults + search.passengers.children + search.passengers.infants} пассажиров · ${search.passengers.travelClass === 'business' ? 'бизнес' : 'эконом'}`
+              : isOutbound
+                ? 'Москва → Сочи · 12 октября · 2 взрослых · эконом'
+                : 'Сочи → Москва · 18 октября · 2 взрослых · эконом'}
+          </p>
 
-        <ol
-          className="mt-4 flex list-none flex-wrap items-center gap-2 p-0"
-          aria-label="Этапы бронирования"
-        >
-          {bookingSteps.map((step, index) => (
-            <li
-              className={
-                index === 0
-                  ? 'shrink-0 rounded-full bg-text-primary px-3 py-1.5 text-[13px] leading-4 text-white'
-                  : 'shrink-0 rounded-full bg-[#e7e9ec] px-3 py-1.5 text-[13px] leading-4 text-text-secondary'
-              }
-              key={step}
-            >
-              {index + 1}. {step}
-            </li>
-          ))}
-        </ol>
+          <BookingSteps current={0} />
+        </div>
       </header>
 
       <div className="mt-3 grid gap-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
