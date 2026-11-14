@@ -3,6 +3,7 @@ export type Hotel = {
   name: string
   stars: number
   description: string
+  details: string
   amenities: string[]
   price: number
   image: string
@@ -16,6 +17,8 @@ export const hotels: Hotel[] = [
     name: 'Sea Galaxy Hotel Congress & SPA',
     stars: 4,
     description: 'Сочи, рядом с морем',
+    details:
+      'Отель рядом с морем. Для отдыха гостей предусмотрены бассейн и спа, на территории доступен Wi-Fi.',
     amenities: ['Wi-Fi', 'Бассейн', 'Спа'],
     breakfast: true,
     freeCancellation: true,
@@ -28,6 +31,8 @@ export const hotels: Hotel[] = [
     name: 'Pullman Sochi Centre',
     stars: 5,
     description: 'Сочи, центр города',
+    details:
+      'Отель в центре Сочи с рестораном и бассейном. Гости могут пользоваться Wi-Fi и выбрать проживание с завтраком.',
     amenities: ['Wi-Fi', 'Бассейн', 'Ресторан'],
     breakfast: true,
     freeCancellation: false,
@@ -40,6 +45,8 @@ export const hotels: Hotel[] = [
     name: 'Radisson Collection Paradise Resort',
     stars: 5,
     description: 'Сочи, рядом с морем',
+    details:
+      'Отель рядом с морем с бассейном и спа. На территории доступен Wi-Fi, предусмотрена бесплатная отмена.',
     amenities: ['Wi-Fi', 'Бассейн', 'Спа'],
     breakfast: false,
     freeCancellation: true,
@@ -52,6 +59,7 @@ export const hotels: Hotel[] = [
     name: 'Отель у моря',
     stars: 3,
     description: 'Сочи',
+    details: 'Отель в Сочи с рестораном и Wi-Fi. Подойдёт для отдыха и прогулок по городу.',
     amenities: ['Wi-Fi', 'Ресторан'],
     breakfast: false,
     freeCancellation: false,

@@ -8,10 +8,12 @@ import BookingSteps from '@/shared/BookingSteps'
 import HotelFiltersPanel from './HotelFiltersPanel'
 import FilterTrigger from '@/shared/FilterTrigger'
 import { defaultHotelFilters, filterHotels, type HotelFilters } from './hotelFilters'
+import HotelDetailsDialog from './HotelDetailsDialog'
 
 function HotelSelectionPage() {
   const [visibleCount, setVisibleCount] = useState(3)
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [detailsHotel, setDetailsHotel] = useState<Hotel | null>(null)
   const [filters, setFilters] = useState<HotelFilters>(defaultHotelFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [filtersButton, setFiltersButton] = useState<HTMLButtonElement | null>(null)
@@ -146,7 +148,10 @@ function HotelSelectionPage() {
                   key={hotel.id}
                   hotel={hotel}
                   selected={selectedHotel?.id === hotel.id}
-                  onSelect={setSelectedHotel}
+                  onSelect={(hotel) => {
+                    setSelectedHotel(hotel)
+                    setDetailsHotel(hotel)
+                  }}
                 />
               ))}
             </div>
@@ -193,6 +198,9 @@ function HotelSelectionPage() {
           </div>
         </aside>
       </div>
+      {detailsHotel && (
+        <HotelDetailsDialog hotel={detailsHotel} onClose={() => setDetailsHotel(null)} />
+      )}
     </section>
   )
 }
