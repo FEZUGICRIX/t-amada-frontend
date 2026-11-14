@@ -1,7 +1,8 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
 import App from './App'
-import FlightSelectionPage from '@/pages/flight-selection/FlightSelectionPage'
+import FlightsRoutePage from '@/pages/flight-selection/FlightsRoutePage'
 import TripSearchPage from '@/pages/trip-search/TripSearchPage'
+import HotelSelectionPage from '@/pages/hotel-selection/HotelSelectionPage'
 
 const rootRoute = createRootRoute({
   component: App,
@@ -17,10 +18,15 @@ const searchRoute = createRoute({
 const flightsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/flights',
-  component: FlightSelectionPage,
+  component: FlightsRoutePage,
 })
 
-const routeTree = rootRoute.addChildren([searchRoute, flightsRoute])
+const hotelsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/hotels',
+  component: HotelSelectionPage,
+})
+const routeTree = rootRoute.addChildren([searchRoute, flightsRoute, hotelsRoute])
 
 export const router = createRouter({
   routeTree,

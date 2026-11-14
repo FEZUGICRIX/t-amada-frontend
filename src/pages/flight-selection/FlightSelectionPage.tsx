@@ -118,7 +118,7 @@ function getActiveFilterLabels(filters: FlightFilters) {
   return labels
 }
 
-function FlightSelectionPage() {
+function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
   const [filtersButton, setFiltersButton] = useState<HTMLButtonElement | null>(null)
   const [search] = useState(() => {
     try {
@@ -208,7 +208,8 @@ function FlightSelectionPage() {
     if (isOutbound && selectedFlightId !== null && !search?.isOneWay) {
       setDirection('return')
     } else if (selectedFlightId !== null) {
-      setIsComplete(true)
+      if (onComplete) onComplete()
+      else setIsComplete(true)
     }
   }
 
@@ -268,7 +269,7 @@ function FlightSelectionPage() {
         </p>
 
         <ol
-          className="mt-4 flex list-none items-center gap-2 overflow-x-auto p-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="mt-4 flex list-none flex-wrap items-center gap-2 p-0"
           aria-label="Этапы бронирования"
         >
           {bookingSteps.map((step, index) => (
