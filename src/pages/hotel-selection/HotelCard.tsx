@@ -25,9 +25,17 @@ function HotelCard({
       <div className="min-w-0 flex-1">
         <h3 className="break-words text-base font-semibold">{hotel.name}</h3>
         <p className="mt-1 text-sm text-text-secondary">
-          {hotel.stars} {hotel.stars === 4 ? 'звезды' : 'звёзд'} · {hotel.description}
+          {hotel.stars} {hotel.stars >= 2 && hotel.stars <= 4 ? 'звезды' : 'звёзд'} ·{' '}
+          {hotel.description}
         </p>
         <p className="mt-2 text-xs text-text-secondary">{hotel.amenities.join(' · ')}</p>
+        {(hotel.breakfast || hotel.freeCancellation) && (
+          <p className="mt-1 text-xs text-text-secondary">
+            {[hotel.breakfast && 'Завтрак включён', hotel.freeCancellation && 'Бесплатная отмена']
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+        )}
       </div>
       <div className="flex items-end justify-between gap-3 sm:flex-col">
         <div className="text-right">

@@ -6,6 +6,7 @@ import formatPrice from './formatPrice'
 import { outboundFlights, returnFlights } from './mockFlights'
 import type { Flight } from './types'
 import BookingSteps from '@/shared/BookingSteps'
+import FilterTrigger from '@/shared/FilterTrigger'
 
 type FlightDirection = 'outbound' | 'return'
 
@@ -272,77 +273,59 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
         </div>
       </header>
 
-      <div className="mt-3 grid gap-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
-        <div className="min-w-0">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl leading-7 font-semibold md:text-[22px] md:leading-8">
-              {getFlightsCountLabel(filteredFlights.length)}
-            </h2>
+      <div className="mt-3 grid gap-x-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
+        <div className="min-w-0 lg:contents">
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl leading-7 font-semibold md:text-[22px] md:leading-8">
+                {getFlightsCountLabel(filteredFlights.length)}
+              </h2>
 
-            <span className="inline-flex items-center rounded-full border border-[#dfe3e8] bg-[#f5f6f7] px-3 py-1.5 text-xs leading-4 font-semibold text-text-primary md:text-[13px]">
-              {search
-                ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin}`
-                : isOutbound
-                  ? 'Москва → Сочи'
-                  : 'Сочи → Москва'}
-            </span>
-          </div>
+              <span className="inline-flex items-center rounded-full border border-[#dfe3e8] bg-[#f5f6f7] px-3 py-1.5 text-xs leading-4 font-semibold text-text-primary md:text-[13px]">
+                {search
+                  ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin}`
+                  : isOutbound
+                    ? 'Москва → Сочи'
+                    : 'Сочи → Москва'}
+              </span>
+            </div>
 
-          <div className="relative mt-3 w-fit">
-            <button
-              ref={setFiltersButton}
-              className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-xl border border-[#cfd3d8] bg-white px-4 text-sm font-semibold text-text-primary hover:bg-[#f7f8f9] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary"
-              type="button"
-              aria-expanded={isFiltersOpen}
-              aria-controls="flight-filters-panel"
-              onClick={() => setIsFiltersOpen((isOpen) => !isOpen)}
-            >
-              Фильтры и сортировка
-              {activeFilterLabels.length > 0 && (
-                <span className="grid size-5 place-items-center rounded-md bg-[#e7e9ec] text-[11px]">
-                  {activeFilterLabels.length}
-                </span>
-              )}
-              <svg
-                className={`ml-1 size-4 transition-transform ${isFiltersOpen ? 'rotate-180' : ''}`}
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="m6 8 4 4 4-4" />
-              </svg>
-            </button>
-
-            {isFiltersOpen && (
-              <FlightFiltersPanel
-                anchor={filtersButton}
-                filters={draftFilters}
-                airlines={airlines}
-                onChange={handleFilterChange}
-                onReset={handleResetFilters}
-                onClose={() => setIsFiltersOpen(false)}
+            <div className="relative mt-3 w-fit">
+              <FilterTrigger
+                setAnchor={setFiltersButton}
+                open={isFiltersOpen}
+                count={activeFilterLabels.length}
+                controls="flight-filters-panel"
+                onClick={() => setIsFiltersOpen((isOpen) => !isOpen)}
               />
+
+              {isFiltersOpen && (
+                <FlightFiltersPanel
+                  anchor={filtersButton}
+                  filters={draftFilters}
+                  airlines={airlines}
+                  onChange={handleFilterChange}
+                  onReset={handleResetFilters}
+                  onClose={() => setIsFiltersOpen(false)}
+                />
+              )}
+            </div>
+
+            {activeFilterLabels.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Активные фильтры">
+                {activeFilterLabels.map((filter) => (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#f1f2f3] px-2.5 py-1.5 text-[11px] leading-3 text-text-secondary"
+                    key={filter}
+                  >
+                    {filter}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
 
-          {activeFilterLabels.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Активные фильтры">
-              {activeFilterLabels.map((filter) => (
-                <span
-                  className="inline-flex items-center gap-1 rounded-lg bg-[#f1f2f3] px-2.5 py-1.5 text-[11px] leading-3 text-text-secondary"
-                  key={filter}
-                >
-                  {filter}
-                </span>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-2">
+          <div className="mt-2 min-w-0 lg:col-start-1 lg:row-start-2">
             {filteredFlights.length > 0 ? (
               <FlightList
                 key={`${direction}-${JSON.stringify(appliedFilters)}`}
@@ -373,7 +356,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
           </div>
         </div>
 
-        <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white py-3 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:mt-[128px] lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]">
+        <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white py-3 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-2 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]">
           <div className="mx-auto flex w-[calc(100%_-_36px)] items-center gap-4 md:w-[calc(100%_-_64px)] lg:block lg:w-auto">
             <h2 className="hidden text-xl leading-7 font-semibold lg:block">Ваша поездка</h2>
 

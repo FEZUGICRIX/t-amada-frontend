@@ -48,7 +48,9 @@ function FlightFiltersPanel({
           8,
           Math.min(
             rect.bottom + 8,
-            window.innerHeight - Math.min(600, window.innerHeight - 16) - 8,
+            window.innerHeight -
+              Math.min(panelRef.current?.offsetHeight ?? 600, window.innerHeight - 16) -
+              8,
           ),
         ),
         left: Math.max(8, Math.min(rect.left, window.innerWidth - 428)),

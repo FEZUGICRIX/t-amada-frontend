@@ -5,21 +5,47 @@ import formatPrice from '@/pages/flight-selection/formatPrice'
 import HotelCard from './HotelCard'
 import { hotels, type Hotel } from './hotels'
 import BookingSteps from '@/shared/BookingSteps'
+import HotelFiltersPanel from './HotelFiltersPanel'
+import FilterTrigger from '@/shared/FilterTrigger'
+import { defaultHotelFilters, filterHotels, type HotelFilters } from './hotelFilters'
 
 function HotelSelectionPage() {
   const [visibleCount, setVisibleCount] = useState(3)
   const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [filters, setFilters] = useState<HotelFilters>(defaultHotelFilters)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [filtersButton, setFiltersButton] = useState<HTMLButtonElement | null>(null)
+  const filteredHotels = filterHotels(hotels, filters)
+  function updateFilters(next: HotelFilters) {
+    setFilters(next)
+    setVisibleCount(3)
+  }
+  function resetFilters() {
+    updateFilters(defaultHotelFilters)
+  }
+  const activeCount =
+    Number(filters.minPrice !== null) +
+    Number(filters.maxPrice !== null) +
+    Number(filters.stars) +
+    Number(filters.breakfast) +
+    Number(filters.freeCancellation) +
+    Number(filters.sort !== 'default')
   const loaderRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const element = loaderRef.current
-    if (!element || visibleCount >= hotels.length || typeof IntersectionObserver === 'undefined')
+    if (
+      !element ||
+      visibleCount >= filteredHotels.length ||
+      typeof IntersectionObserver === 'undefined'
+    )
       return
     const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setVisibleCount((count) => Math.min(count + 3, hotels.length))
+      if (entry.isIntersecting)
+        setVisibleCount((count) => Math.min(count + 3, filteredHotels.length))
     })
     observer.observe(element)
     return () => observer.disconnect()
-  }, [visibleCount])
+  }, [visibleCount, filteredHotels.length])
   const [trip] = useState(() => {
     try {
       const search = JSON.parse(sessionStorage.getItem('trip-search') || 'null') as {
@@ -83,36 +109,78 @@ function HotelSelectionPage() {
         </p>
         <BookingSteps current={1} />
       </div>
-      <div className="mt-3 grid gap-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
-        <div>
-          <h2 className="text-xl leading-7 font-semibold md:text-[22px] md:leading-8">
-            {hotels.length} отеля
-          </h2>
-          <div className="mt-3 flex flex-col gap-2" aria-label="Список отелей">
-            {hotels.slice(0, visibleCount).map((hotel) => (
-              <HotelCard
-                key={hotel.id}
-                hotel={hotel}
-                selected={selectedHotel?.id === hotel.id}
-                onSelect={setSelectedHotel}
+      <div className="mt-3 grid gap-x-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
+        <div className="min-w-0 lg:contents">
+          <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+            <h2 className="text-xl leading-7 font-semibold md:text-[22px] md:leading-8">
+              {filteredHotels.length}{' '}
+              {filteredHotels.length === 1
+                ? 'отель'
+                : filteredHotels.length >= 2 && filteredHotels.length <= 4
+                  ? 'отеля'
+                  : 'отелей'}
+            </h2>
+            <div className="relative mt-3 w-fit">
+              <FilterTrigger
+                setAnchor={setFiltersButton}
+                open={filtersOpen}
+                count={activeCount}
+                controls="hotel-filters-panel"
+                onClick={() => setFiltersOpen((open) => !open)}
               />
-            ))}
-          </div>
-          {visibleCount < hotels.length && (
-            <div ref={loaderRef} className="mt-5 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setVisibleCount((count) => count + 3)}
-                className="h-10 rounded-xl border border-[#cfd3d8] px-5 text-sm font-semibold hover:bg-[#f5f6f7] focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                Показать ещё
-              </button>
+              {filtersOpen && (
+                <HotelFiltersPanel
+                  anchor={filtersButton}
+                  filters={filters}
+                  onChange={updateFilters}
+                  onReset={resetFilters}
+                  onClose={() => setFiltersOpen(false)}
+                />
+              )}
             </div>
-          )}
+          </div>
+          <div className="min-w-0 lg:col-start-1 lg:row-start-2">
+            <div className="mt-3 flex flex-col gap-2" aria-label="Список отелей">
+              {filteredHotels.slice(0, visibleCount).map((hotel) => (
+                <HotelCard
+                  key={hotel.id}
+                  hotel={hotel}
+                  selected={selectedHotel?.id === hotel.id}
+                  onSelect={setSelectedHotel}
+                />
+              ))}
+            </div>
+            {filteredHotels.length === 0 && (
+              <div className="mt-3 rounded-2xl border border-[#e1e4e8] p-8 text-center">
+                <h3 className="text-lg font-semibold">Отели не найдены</h3>
+                <p className="mt-2 text-sm text-text-secondary">
+                  Измени параметры фильтров или сбрось их.
+                </p>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="mt-4 rounded-xl bg-accent px-4 py-2 text-sm font-semibold"
+                >
+                  Сбросить фильтры
+                </button>
+              </div>
+            )}
+            {visibleCount < filteredHotels.length && (
+              <div ref={loaderRef} className="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((count) => count + 3)}
+                  className="h-10 rounded-xl border border-[#cfd3d8] px-5 text-sm font-semibold hover:bg-[#f5f6f7] focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  Показать ещё
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <aside
           aria-label="Ваша поездка"
-          className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
         >
           <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
           <div className="flex items-center justify-between gap-4 lg:mt-4">
