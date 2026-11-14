@@ -178,7 +178,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
   const [appliedFilters, setAppliedFilters] = useState<FlightFilters>(createDefaultFilters)
 
   const isOutbound = direction === 'outbound'
-  // Local demo prices are per adult or child; infants do not add to the price.
+  // В тестовых данных взрослые и дети оплачивают билет, младенцы летят бесплатно.
   const payingPassengers = search ? search.passengers.adults + search.passengers.children : 1
   const matchesDemoRoute =
     !search ||

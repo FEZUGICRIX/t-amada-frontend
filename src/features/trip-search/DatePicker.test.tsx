@@ -20,7 +20,7 @@ describe('DatePicker', () => {
     vi.useRealTimers()
   })
 
-  it('shows the next month', () => {
+  it('показывает следующий месяц', () => {
     render(<DatePicker {...defaultProps} />)
 
     fireEvent.click(
@@ -32,7 +32,7 @@ describe('DatePicker', () => {
     expect(screen.getByText('Декабрь')).toBeInTheDocument()
   })
 
-  it('does not navigate earlier than the current month', () => {
+  it('не позволяет перейти к прошедшему месяцу', () => {
     render(<DatePicker {...defaultProps} />)
 
     expect(
@@ -42,7 +42,7 @@ describe('DatePicker', () => {
     ).toBeDisabled()
   })
 
-  it('allows selecting the current year and the next five years', () => {
+  it('позволяет выбрать текущий год и пять следующих', () => {
     render(<DatePicker {...defaultProps} />)
 
     const yearSelect = screen.getByRole('combobox', {
@@ -59,7 +59,7 @@ describe('DatePicker', () => {
     expect(yearSelect).toHaveValue('2031')
   })
 
-  it('disables past dates', () => {
+  it('делает прошедшие даты недоступными', () => {
     render(<DatePicker {...defaultProps} />)
 
     expect(
@@ -75,7 +75,7 @@ describe('DatePicker', () => {
     ).not.toBeDisabled()
   })
 
-  it('disables return dates earlier than the departure date', () => {
+  it('делает даты до вылета недоступными для возвращения', () => {
     render(
       <DatePicker {...defaultProps} departureDate={new Date(2026, 10, 5)} selectionMode="return" />,
     )
@@ -93,7 +93,7 @@ describe('DatePicker', () => {
     ).not.toBeDisabled()
   })
 
-  it('returns the selected date', () => {
+  it('возвращает выбранную дату', () => {
     const onSelect = vi.fn()
 
     render(<DatePicker {...defaultProps} onSelect={onSelect} />)

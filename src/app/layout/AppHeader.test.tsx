@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import AppHeader from './AppHeader'
 
 describe('AppHeader', () => {
-  it('renders the logo and navigation', () => {
+  it('отображает логотип и навигацию', () => {
     render(<AppHeader />)
 
     expect(screen.getByRole('banner')).toBeInTheDocument()

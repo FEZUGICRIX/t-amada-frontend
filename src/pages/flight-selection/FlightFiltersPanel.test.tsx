@@ -28,7 +28,7 @@ function PanelHarness() {
 }
 
 describe('FlightFiltersPanel', () => {
-  it('matches the compact controls and applies their values', () => {
+  it('применяет выбранные параметры', () => {
     render(<PanelHarness />)
     fireEvent.change(screen.getByRole('textbox', { name: 'Цена от' }), {
       target: { value: '10000' },
@@ -57,7 +57,7 @@ describe('FlightFiltersPanel', () => {
     )
   })
 
-  it('keeps only digits and formats the value as rubles', () => {
+  it('оставляет только цифры и форматирует сумму в рублях', () => {
     render(<PanelHarness />)
     fireEvent.change(screen.getByRole('textbox', { name: 'Цена до' }), {
       target: { value: '-abc50000руб' },
@@ -67,7 +67,7 @@ describe('FlightFiltersPanel', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
-  it('resets every control', () => {
+  it('сбрасывает все параметры', () => {
     render(<PanelHarness />)
     fireEvent.click(screen.getByRole('button', { name: 'Сначала дороже' }))
     fireEvent.click(screen.getByRole('button', { name: 'Прямой' }))
@@ -85,7 +85,7 @@ describe('FlightFiltersPanel', () => {
     )
   })
 
-  it('closes from Escape and the background', () => {
+  it('закрывается по Escape и нажатию на фон', () => {
     const firstRender = render(<PanelHarness />)
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.getByText('Панель закрыта')).toBeInTheDocument()
@@ -96,7 +96,7 @@ describe('FlightFiltersPanel', () => {
     expect(screen.getByText('Панель закрыта')).toBeInTheDocument()
   })
 
-  it('keeps keyboard focus inside the panel', () => {
+  it('удерживает фокус внутри панели', () => {
     render(<PanelHarness />)
     const closeButton = screen.getByRole('button', { name: 'Закрыть фильтры' })
     const applyButton = screen.getByRole('button', { name: 'Сбросить' })
