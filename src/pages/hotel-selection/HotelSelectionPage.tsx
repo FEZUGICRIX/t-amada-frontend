@@ -9,10 +9,25 @@ import HotelFiltersPanel from './HotelFiltersPanel'
 import FilterTrigger from '@/shared/FilterTrigger'
 import { defaultHotelFilters, filterHotels, type HotelFilters } from './hotelFilters'
 import HotelDetailsDialog from './HotelDetailsDialog'
+import { getRoomsForHotel } from './rooms'
 
 function HotelSelectionPage() {
   const [visibleCount, setVisibleCount] = useState(3)
-  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null)
+  const [savedRoom, setSavedRoom] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
+        hotelId: string
+        roomId: string
+      } | null
+    } catch {
+      return null
+    }
+  })
+  const selectedHotel = hotels.find((hotel) => hotel.id === savedRoom?.hotelId) ?? null
+  const selectedRoom =
+    savedRoom && selectedHotel?.id === savedRoom.hotelId
+      ? getRoomsForHotel(selectedHotel.price).find((room) => room.id === savedRoom.roomId)
+      : undefined
   const [detailsHotel, setDetailsHotel] = useState<Hotel | null>(null)
   const [filters, setFilters] = useState<HotelFilters>(defaultHotelFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -148,10 +163,7 @@ function HotelSelectionPage() {
                   key={hotel.id}
                   hotel={hotel}
                   selected={selectedHotel?.id === hotel.id}
-                  onSelect={(hotel) => {
-                    setSelectedHotel(hotel)
-                    setDetailsHotel(hotel)
-                  }}
+                  onSelect={setDetailsHotel}
                 />
               ))}
             </div>
@@ -188,13 +200,38 @@ function HotelSelectionPage() {
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
         >
           <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
+          {selectedRoom && (
+            <p className="hidden text-sm text-text-secondary lg:mt-3 lg:block">
+              {selectedHotel?.name} · {selectedRoom.name}
+            </p>
+          )}
           <div className="flex items-center justify-between gap-4 lg:mt-4">
             <span className="text-sm">Авиабилет</span>
             <strong>{formatPrice(price)}</strong>
           </div>
+          {selectedRoom && (
+            <div className="mt-3 flex items-center justify-between gap-3 text-sm">
+              <span>Отель</span>
+              <strong className="shrink-0 whitespace-nowrap">
+                {formatPrice(selectedRoom.price)}
+              </strong>
+            </div>
+          )}
+          {selectedRoom && (
+            <button
+              type="button"
+              onClick={() => {
+                sessionStorage.removeItem('selected-room')
+                setSavedRoom(null)
+              }}
+              className="mt-2 text-sm font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              Убрать отель
+            </button>
+          )}
           <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
             <strong>Итого</strong>
-            <strong>{formatPrice(price)}</strong>
+            <strong>{formatPrice(price + (selectedRoom?.price ?? 0))}</strong>
           </div>
         </aside>
       </div>
