@@ -5,8 +5,27 @@ import formatPrice from '@/pages/flight-selection/formatPrice'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { hotels } from '@/pages/hotel-selection/hotels'
 import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
+import { insurancePlans } from './insurancePlans'
+import InsuranceCard from './InsuranceCard'
 
 function InsurancePage() {
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    sessionStorage.getItem('selected-insurance'),
+  )
+  const [continued, setContinued] = useState(false)
+  const [search] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('trip-search') || 'null') as {
+        destination?: string
+        departureDate?: string | null
+        returnDate?: string | null
+        isOneWay?: boolean
+        passengers?: { adults: number; children: number; infants: number }
+      } | null
+    } catch {
+      return null
+    }
+  })
   const [trip] = useState(() => {
     try {
       const selection = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
@@ -22,7 +41,18 @@ function InsurancePage() {
       return { hotel: undefined, room: undefined, flightPrice: 0 }
     }
   })
-  const total = trip.flightPrice + (trip.room?.price ?? 0)
+  const selected = insurancePlans.find((plan) => plan.id === selectedId)
+  const total = trip.flightPrice + (trip.room?.price ?? 0) + (selected?.price ?? 0)
+  function selectPlan(id: string) {
+    setSelectedId(id)
+    setContinued(false)
+    sessionStorage.setItem('selected-insurance', id)
+  }
+  function skipInsurance() {
+    setSelectedId(null)
+    sessionStorage.removeItem('selected-insurance')
+    setContinued(true)
+  }
   return (
     <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
       {trip.hotel && trip.room ? (
@@ -48,8 +78,8 @@ function InsurancePage() {
           </h1>
           <button
             type="button"
-            disabled
-            className="text-sm text-text-secondary disabled:cursor-not-allowed"
+            onClick={skipInsurance}
+            className="text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             Пропустить этап
           </button>
@@ -59,21 +89,14 @@ function InsurancePage() {
       </header>
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
         <div aria-label="Варианты страховки" className="space-y-2">
-          {['Базовая защита', 'Расширенная защита'].map((name) => (
-            <article
-              key={name}
-              className="flex items-center gap-4 rounded-xl border border-[#e1e4e8] bg-white p-4"
-            >
-              <span
-                aria-hidden="true"
-                className="grid size-11 shrink-0 place-items-center rounded-lg bg-[#f2f3f4] font-semibold"
-              >
-                С
-              </span>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold">{name}</h2>
-              </div>
-            </article>
+          {insurancePlans.map((plan) => (
+            <InsuranceCard
+              key={plan.id}
+              plan={plan}
+              selected={selectedId === plan.id}
+              search={search}
+              onSelect={() => selectPlan(plan.id)}
+            />
           ))}
         </div>
         <aside
@@ -81,11 +104,6 @@ function InsurancePage() {
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:rounded-2xl lg:border lg:shadow-sm"
         >
           <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
-          {trip.hotel && trip.room && (
-            <p className="hidden text-sm text-text-secondary lg:mt-3 lg:block">
-              {trip.hotel.name} · {trip.room.name}
-            </p>
-          )}
           <div className="mt-3 hidden justify-between text-sm lg:flex">
             <span>Авиабилет</span>
             <strong>{formatPrice(trip.flightPrice)}</strong>
@@ -96,6 +114,12 @@ function InsurancePage() {
               <strong>{formatPrice(trip.room.price)}</strong>
             </div>
           )}
+          {selected && (
+            <div className="mt-2 hidden justify-between text-sm lg:flex">
+              <span>Страховка</span>
+              <strong>{formatPrice(selected.price)}</strong>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-4 lg:mt-3 lg:border-t lg:border-[#e1e4e8] lg:pt-3">
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
@@ -103,12 +127,18 @@ function InsurancePage() {
             </div>
             <button
               type="button"
-              disabled
-              className="h-10 rounded-xl bg-[#e7e9ec] px-5 text-sm font-semibold text-text-secondary disabled:cursor-not-allowed"
+              disabled={!selected}
+              onClick={() => setContinued(true)}
+              className="h-10 rounded-xl bg-accent px-5 text-sm font-semibold text-text-primary disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
             >
               Продолжить
             </button>
           </div>
+          {continued && (
+            <p role="status" className="mt-2 text-sm text-text-secondary">
+              Следующий этап пока недоступен.
+            </p>
+          )}
         </aside>
       </div>
     </section>
