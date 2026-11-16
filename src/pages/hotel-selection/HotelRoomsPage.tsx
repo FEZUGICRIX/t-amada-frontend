@@ -7,7 +7,7 @@ import RoomCard from './RoomCard'
 import { getRoomsForHotel, type Room } from './rooms'
 import { getTripFlightPrice } from './tripFlightPrice'
 
-function HotelRoomsPage() {
+function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const { hotelId } = useParams({ from: '/hotels/$hotelId/rooms' })
   const hotel = hotels.find((item) => item.id === hotelId)
   const rooms = hotel ? getRoomsForHotel(hotel.price) : []
@@ -148,7 +148,7 @@ function HotelRoomsPage() {
               <button
                 type="button"
                 disabled={!selected}
-                onClick={() => setContinued(true)}
+                onClick={() => (onContinue ? onContinue() : setContinued(true))}
                 className="mt-3 h-10 w-full rounded-xl bg-accent text-sm font-semibold disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
               >
                 Продолжить
