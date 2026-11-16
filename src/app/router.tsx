@@ -3,7 +3,8 @@ import App from './App'
 import FlightsRoutePage from '@/pages/flight-selection/FlightsRoutePage'
 import TripSearchPage from '@/pages/trip-search/TripSearchPage'
 import HotelSelectionPage from '@/pages/hotel-selection/HotelSelectionPage'
-import HotelRoomsPage from '@/pages/hotel-selection/HotelRoomsPage'
+import HotelRoomsRoutePage from '@/pages/hotel-selection/HotelRoomsRoutePage'
+import InsurancePage from '@/pages/insurance/InsurancePage'
 
 const rootRoute = createRootRoute({
   component: App,
@@ -30,9 +31,20 @@ const hotelsRoute = createRoute({
 const hotelRoomsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/hotels/$hotelId/rooms',
-  component: HotelRoomsPage,
+  component: HotelRoomsRoutePage,
 })
-const routeTree = rootRoute.addChildren([searchRoute, flightsRoute, hotelsRoute, hotelRoomsRoute])
+const insuranceRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/insurance',
+  component: InsurancePage,
+})
+const routeTree = rootRoute.addChildren([
+  searchRoute,
+  flightsRoute,
+  hotelsRoute,
+  hotelRoomsRoute,
+  insuranceRoute,
+])
 
 export const router = createRouter({
   routeTree,
