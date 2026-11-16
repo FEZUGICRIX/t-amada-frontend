@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import BookingSteps from '@/shared/BookingSteps'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
@@ -7,6 +7,11 @@ import { hotels } from '@/pages/hotel-selection/hotels'
 import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
 import { insurancePlans } from './insurancePlans'
 import InsuranceCard from './InsuranceCard'
+import TripPeriodPicker from '@/shared/TripPeriod'
+import { formatTripPeriod, readTripPeriod } from '@/shared/tripPeriodData'
+import { readHotelNights } from '@/shared/tripPeriodData'
+import { FlightPriceRow, HotelPriceRow, InsurancePriceRow } from '@/shared/TripPriceRows'
+import { getInsurancePassengerCount } from './insurancePrice'
 
 function InsurancePage() {
   const [selectedId, setSelectedId] = useState<string | null>(() =>
@@ -41,8 +46,18 @@ function InsurancePage() {
       return { hotel: undefined, room: undefined, flightPrice: 0 }
     }
   })
+  const [insurancePeriod, setInsurancePeriod] = useState(() =>
+    readTripPeriod('insurance-period', search),
+  )
+  const [periodError, setPeriodError] = useState(0)
+  const periodRef = useRef<HTMLDivElement>(null)
   const selected = insurancePlans.find((plan) => plan.id === selectedId)
-  const total = trip.flightPrice + (trip.room?.price ?? 0) + (selected?.price ?? 0)
+  const passengerCount = getInsurancePassengerCount(search)
+  const nights = readHotelNights()
+  const total =
+    trip.flightPrice +
+    (trip.room?.price ?? 0) * (nights ?? 0) +
+    (selected?.price ?? 0) * passengerCount
   function selectPlan(id: string) {
     setSelectedId(id)
     setContinued(false)
@@ -87,6 +102,24 @@ function InsurancePage() {
         <p className="mt-2 text-sm text-text-secondary">Стоимость указана за всех пассажиров</p>
         <BookingSteps current={2} />
       </header>
+      {search?.isOneWay ? (
+        <div ref={periodRef}>
+          <TripPeriodPicker
+            label="Даты страховки"
+            period={insurancePeriod}
+            errorAttempt={periodError}
+            onChange={(period) => {
+              setInsurancePeriod(period)
+              if (period.start && period.end) setPeriodError(0)
+              sessionStorage.setItem('insurance-period', JSON.stringify(period))
+            }}
+          />
+        </div>
+      ) : (
+        <p className="mt-4 text-sm text-text-secondary">
+          Даты страховки: {formatTripPeriod(insurancePeriod)}
+        </p>
+      )}
       <div className="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
         <div aria-label="Варианты страховки" className="space-y-2">
           {insurancePlans.map((plan) => (
@@ -95,6 +128,7 @@ function InsurancePage() {
               plan={plan}
               selected={selectedId === plan.id}
               search={search}
+              period={insurancePeriod}
               onSelect={() => selectPlan(plan.id)}
             />
           ))}
@@ -104,31 +138,41 @@ function InsurancePage() {
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:rounded-2xl lg:border lg:shadow-sm"
         >
           <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
-          <div className="mt-3 hidden justify-between text-sm lg:flex">
-            <span>Авиабилет</span>
-            <strong>{formatPrice(trip.flightPrice)}</strong>
+          <details className="mb-3 lg:hidden">
+            <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
+            <FlightPriceRow />
+            {trip.room && <HotelPriceRow nightlyPrice={trip.room.price} nights={nights} />}
+            {selected && <InsurancePriceRow price={selected.price} passengers={passengerCount} />}
+          </details>
+          <div className="hidden lg:block">
+            <FlightPriceRow />
           </div>
           {trip.room && (
-            <div className="mt-2 hidden justify-between text-sm lg:flex">
-              <span>Отель</span>
-              <strong>{formatPrice(trip.room.price)}</strong>
+            <div className="hidden lg:block">
+              <HotelPriceRow nightlyPrice={trip.room.price} nights={nights} />
             </div>
           )}
           {selected && (
-            <div className="mt-2 hidden justify-between text-sm lg:flex">
-              <span>Страховка</span>
-              <strong>{formatPrice(selected.price)}</strong>
+            <div className="hidden lg:block">
+              <InsurancePriceRow price={selected.price} passengers={passengerCount} />
             </div>
           )}
           <div className="flex items-center justify-between gap-4 lg:mt-3 lg:border-t lg:border-[#e1e4e8] lg:pt-3">
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
-              <strong>{formatPrice(total)}</strong>
+              <strong>{trip.room && !nights ? 'Укажите даты' : formatPrice(total)}</strong>
             </div>
             <button
               type="button"
               disabled={!selected}
-              onClick={() => setContinued(true)}
+              onClick={() => {
+                if (search?.isOneWay && (!insurancePeriod.start || !insurancePeriod.end)) {
+                  setPeriodError((count) => count + 1)
+                  periodRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+                  return
+                }
+                setContinued(true)
+              }}
               className="h-10 rounded-xl bg-accent px-5 text-sm font-semibold text-text-primary disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
             >
               Продолжить

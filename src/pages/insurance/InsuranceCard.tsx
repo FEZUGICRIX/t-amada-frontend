@@ -3,19 +3,25 @@ import formatPrice from '@/pages/flight-selection/formatPrice'
 import type { InsurancePlan } from './insurancePlans'
 import InsuranceDetailsDialog from './InsuranceDetailsDialog'
 import type { InsuranceSearch } from './insuranceTrip'
+import type { TripPeriod } from '@/shared/tripPeriodData'
+import { getInsurancePassengerCount } from './insurancePrice'
+import CardPrice from '@/shared/CardPrice'
 
 function InsuranceCard({
   plan,
   selected,
   onSelect,
   search,
+  period,
 }: {
   plan: InsurancePlan
   selected: boolean
   onSelect: () => void
   search: InsuranceSearch
+  period: TripPeriod
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const passengers = getInsurancePassengerCount(search)
   return (
     <>
       <article
@@ -57,7 +63,13 @@ function InsuranceCard({
           </button>
         </div>
         <div className="col-span-2 flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 md:col-span-1 md:flex-col md:items-end md:border-0 md:pt-0">
-          <strong className="whitespace-nowrap">{formatPrice(plan.price)}</strong>
+          <CardPrice
+            price={plan.price}
+            unit="за пассажира"
+            total={passengers > 1 ? plan.price * passengers : null}
+            totalLabel="за всех"
+            align="left"
+          />
           <button
             type="button"
             aria-pressed={selected}
@@ -76,6 +88,7 @@ function InsuranceCard({
           plan={plan}
           selected={selected}
           search={search}
+          period={period}
           onClose={() => setDetailsOpen(false)}
           onSelect={onSelect}
         />

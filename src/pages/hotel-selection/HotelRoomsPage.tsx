@@ -6,6 +6,8 @@ import { hotels } from './hotels'
 import RoomCard from './RoomCard'
 import { getRoomsForHotel, type Room } from './rooms'
 import { getTripFlightPrice } from './tripFlightPrice'
+import { readHotelNights } from '@/shared/tripPeriodData'
+import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
 
 function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const { hotelId } = useParams({ from: '/hotels/$hotelId/rooms' })
@@ -15,6 +17,7 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const [suiteOnly, setSuiteOnly] = useState(false)
   const [continued, setContinued] = useState(false)
   const [flightPrice] = useState(getTripFlightPrice)
+  const [nights] = useState(readHotelNights)
   const [selectedId, setSelectedId] = useState<string | null>(() => {
     try {
       const saved = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
@@ -103,6 +106,7 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
                     <RoomCard
                       key={room.id}
                       room={room}
+                      nights={nights}
                       selected={selectedId === room.id}
                       onSelect={selectRoom}
                     />
@@ -133,21 +137,19 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
               <p className="hidden text-sm text-text-secondary lg:mt-3 lg:block">
                 {selected ? `${hotel.name} · ${selected.name}` : 'Номер не выбран'}
               </p>
-              <div className="flex items-center justify-between gap-4 lg:mt-3">
-                <span className="text-sm">Отель</span>
-                <strong>{selected ? formatPrice(selected.price) : 'Не выбран'}</strong>
-              </div>
-              <div className="mt-2 hidden items-center justify-between text-sm lg:flex">
-                <span>Авиабилет</span>
-                <strong>{formatPrice(flightPrice)}</strong>
-              </div>
+              {selected && <HotelPriceRow nightlyPrice={selected.price} nights={nights} />}
+              <FlightPriceRow />
               <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
                 <strong>Итого</strong>
-                <strong>{formatPrice(flightPrice + (selected?.price ?? 0))}</strong>
+                <strong>
+                  {selected && !nights
+                    ? 'Укажите даты'
+                    : formatPrice(flightPrice + (selected?.price ?? 0) * (nights ?? 0))}
+                </strong>
               </div>
               <button
                 type="button"
-                disabled={!selected}
+                disabled={!selected || !nights}
                 onClick={() => (onContinue ? onContinue() : setContinued(true))}
                 className="mt-3 h-10 w-full rounded-xl bg-accent text-sm font-semibold disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
               >

@@ -27,13 +27,21 @@ describe('Выбор номера', () => {
       'selected-flights',
       JSON.stringify({ outbound: 'aeroflot-1', return: null }),
     )
+    sessionStorage.setItem(
+      'hotel-period',
+      JSON.stringify({ start: '2026-12-01', end: '2026-12-03' }),
+    )
     const { unmount } = render(<HotelRoomsPage />)
     fireEvent.click(
       within(screen.getByRole('article', { name: 'Стандарт одноместный' })).getByRole('button', {
         name: 'Выбрать',
       }),
     )
-    expect(screen.getByLabelText('Выбранный номер')).toHaveTextContent('68 680 ₽')
+    expect(screen.getByLabelText('Выбранный номер')).toHaveTextContent('112 480 ₽')
+    expect(screen.getByLabelText('Выбранный номер')).toHaveTextContent('43 800 ₽ за ночь × 2 ночи')
+    expect(screen.getByRole('article', { name: 'Стандарт одноместный' })).toHaveTextContent(
+      '87 600 ₽ за проживание',
+    )
     unmount()
     render(<HotelRoomsPage />)
     expect(

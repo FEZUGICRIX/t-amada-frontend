@@ -85,6 +85,8 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
   const [isOneWay, setIsOneWay] = useState(savedSearch?.isOneWay ?? false)
   const [activePanel, setActivePanel] = useState<ActivePanel>(null)
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('departure')
+  const [dateError, setDateError] = useState(false)
+  const [dateErrorAttempt, setDateErrorAttempt] = useState(0)
   const [departureDate, setDepartureDate] = useState<Date | null>(
     savedSearch?.departureDate ? new Date(`${savedSearch.departureDate}T00:00:00`) : null,
   )
@@ -102,6 +104,14 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
+    if (!departureDate || (!isOneWay && !returnDate)) {
+      setDateError(true)
+      setDateErrorAttempt((count) => count + 1)
+      setSelectionMode(!departureDate ? 'departure' : 'return')
+      setActivePanel('calendar')
+      return
+    }
+    setDateError(false)
     const form = new FormData(evt.currentTarget)
     const serializeDate = (date: Date | null) =>
       date
@@ -131,6 +141,7 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
     if (selectionMode === 'departure') {
       setDepartureDate(date)
       setReturnDate(null)
+      if (isOneWay) setDateError(false)
 
       if (!isOneWay) {
         setSelectionMode('return')
@@ -141,12 +152,14 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
 
     if (departureDate && date >= departureDate) {
       setReturnDate(date)
+      setDateError(false)
     }
   }
 
   function handleOneWayChange(isChecked: boolean) {
     setIsOneWay(isChecked)
     setSelectionMode('departure')
+    if (isChecked && departureDate) setDateError(false)
   }
 
   return (
@@ -193,13 +206,21 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
             ))}
           </datalist>
 
-          <button className={FIELD_BUTTON_CLASS_NAME} type="button" onClick={openDepartureCalendar}>
+          <button
+            key={`departure-${dateErrorAttempt}`}
+            aria-invalid={dateError && !departureDate}
+            className={`${FIELD_BUTTON_CLASS_NAME} ${dateError && !departureDate ? 'border-red-500 motion-safe:animate-[pulse_0.6s_ease-in-out_2]' : ''}`}
+            type="button"
+            onClick={openDepartureCalendar}
+          >
             <span className={FIELD_LABEL_CLASS_NAME}>Когда</span>
             <span className={FIELD_VALUE_CLASS_NAME}>{formatDate(departureDate)}</span>
           </button>
 
           <button
-            className={`${FIELD_BUTTON_CLASS_NAME} disabled:cursor-not-allowed disabled:bg-[#f5f6f7] disabled:opacity-60`}
+            key={`return-${dateErrorAttempt}`}
+            aria-invalid={dateError && !isOneWay && !returnDate}
+            className={`${FIELD_BUTTON_CLASS_NAME} ${dateError && !isOneWay && !returnDate ? 'border-red-500 motion-safe:animate-[pulse_0.6s_ease-in-out_2]' : ''} disabled:cursor-not-allowed disabled:bg-[#f5f6f7] disabled:opacity-60`}
             type="button"
             onClick={openReturnCalendar}
             disabled={isOneWay}
@@ -224,6 +245,11 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
             Найти билеты
           </button>
         </div>
+        {dateError && (
+          <p role="alert" className="mt-2 text-sm text-red-700">
+            {isOneWay ? 'Выберите дату вылета' : 'Выберите даты вылета и возвращения'}
+          </p>
+        )}
 
         <label className="relative mt-3 flex w-fit cursor-pointer items-center gap-2 text-[10px] leading-[14px] md:text-xs md:leading-4">
           <input

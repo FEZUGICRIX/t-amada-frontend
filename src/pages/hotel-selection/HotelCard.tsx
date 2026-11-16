@@ -1,14 +1,16 @@
 import type { Hotel } from './hotels'
-import formatPrice from '@/pages/flight-selection/formatPrice'
+import CardPrice from '@/shared/CardPrice'
 
 function HotelCard({
   hotel,
   selected = false,
   onSelect,
+  nights,
 }: {
   hotel: Hotel
   selected?: boolean
   onSelect: (hotel: Hotel) => void
+  nights?: number | null
 }) {
   return (
     <article
@@ -38,9 +40,13 @@ function HotelCard({
         )}
       </div>
       <div className="flex items-end justify-between gap-3 sm:flex-col">
-        <div className="text-right">
-          <strong className="text-base">от {formatPrice(hotel.price)}</strong>
-        </div>
+        <CardPrice
+          price={hotel.price}
+          unit="за ночь"
+          from
+          total={nights && nights > 1 ? hotel.price * nights : null}
+          totalLabel="за проживание"
+        />
         <button
           type="button"
           onClick={(event) => {

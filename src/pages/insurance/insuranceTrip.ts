@@ -19,7 +19,9 @@ const russianCities = new Set([
   'челябинск',
 ])
 
-export function getInsuranceTripDetails(search: InsuranceSearch): string {
+import type { TripPeriod } from '@/shared/tripPeriodData'
+
+export function getInsuranceTripDetails(search: InsuranceSearch, period?: TripPeriod): string {
   const parts: string[] = []
   if (search?.passengers) {
     const { adults = 0, children = 0, infants = 0 } = search.passengers
@@ -39,12 +41,13 @@ export function getInsuranceTripDetails(search: InsuranceSearch): string {
   } catch {
     /* Нет сохранённых рейсов */
   }
-  const start = search?.departureDate && new Date(`${search.departureDate}T00:00:00`)
-  const end = search?.returnDate && new Date(`${search.returnDate}T00:00:00`)
+  const startValue = period?.start ?? search?.departureDate
+  const endValue = period?.end ?? (search?.isOneWay ? null : search?.returnDate)
+  const start = startValue && new Date(`${startValue}T00:00:00`)
+  const end = endValue && new Date(`${endValue}T00:00:00`)
   if (
-    !search?.isOneWay &&
-    flights?.outbound &&
-    flights.return &&
+    ((search?.isOneWay && period?.start && period.end) ||
+      (!search?.isOneWay && flights?.outbound && flights.return)) &&
     start &&
     end &&
     !Number.isNaN(start.getTime()) &&

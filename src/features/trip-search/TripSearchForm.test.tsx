@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import TripSearchForm from './TripSearchForm'
 
@@ -199,7 +199,7 @@ describe('TripSearchForm', () => {
     ).toBeInTheDocument()
   })
 
-  it('запускает поиск при отправке формы', () => {
+  it('требует даты и запускает поиск после их выбора', () => {
     const onSearch = vi.fn()
 
     render(<TripSearchForm onSearch={onSearch} />)
@@ -209,7 +209,14 @@ describe('TripSearchForm', () => {
         name: 'Найти билеты',
       }),
     )
-
+    expect(onSearch).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Выберите даты вылета и возвращения')
+    const today = within(screen.getByRole('dialog', { name: 'Выбор даты' })).getByRole('button', {
+      current: 'date',
+    })
+    fireEvent.click(today)
+    fireEvent.click(today)
+    fireEvent.click(screen.getByRole('button', { name: 'Найти билеты' }))
     expect(onSearch).toHaveBeenCalledOnce()
   })
 })

@@ -11,6 +11,8 @@ function TripSearchPage() {
         sessionStorage.removeItem('selected-flights')
         sessionStorage.removeItem('selected-room')
         sessionStorage.removeItem('selected-insurance')
+        sessionStorage.removeItem('hotel-period')
+        sessionStorage.removeItem('insurance-period')
         void navigate({ to: '/flights' })
       }}
     />
