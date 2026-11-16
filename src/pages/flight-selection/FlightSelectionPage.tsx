@@ -7,6 +7,7 @@ import { outboundFlights, returnFlights } from './mockFlights'
 import type { Flight } from './types'
 import BookingSteps from '@/shared/BookingSteps'
 import FilterTrigger from '@/shared/FilterTrigger'
+import { formatFlightPassengers } from '@/shared/flightPriceDescription'
 
 type FlightDirection = 'outbound' | 'return'
 
@@ -333,6 +334,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
                 selectedFlightId={selectedFlightId}
                 onSelect={selectFlight}
                 groupPrice={!!search}
+                payingPassengers={payingPassengers}
               />
             ) : (
               <div className="rounded-2xl border border-[#e1e4e8] bg-white px-5 py-12 text-center">
@@ -375,9 +377,29 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
               )}
             </div>
 
-            <div className="mt-3 hidden items-center justify-between border-b border-[#e1e4e8] pb-3 text-xs lg:flex">
-              <span>Авиабилет</span>
-              <strong>{formattedTotalPrice}</strong>
+            <div className="mt-4 hidden border-b border-[#e1e4e8] pb-4 text-xs lg:block">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm font-semibold">Авиабилет</span>
+                <strong className="shrink-0 whitespace-nowrap text-sm">
+                  {formattedTotalPrice}
+                </strong>
+              </div>
+              {(selectedOutboundFlight || selectedReturnFlight) && (
+                <div className="mt-1.5 space-y-1 text-xs leading-4 text-text-secondary">
+                  {[
+                    selectedOutboundFlight &&
+                      `Туда: ${formatPrice(selectedOutboundFlight.price)} × ${payingPassengers}`,
+                    !search?.isOneWay &&
+                      selectedReturnFlight &&
+                      `Обратно: ${formatPrice(selectedReturnFlight.price)} × ${payingPassengers}`,
+                  ]
+                    .filter(Boolean)
+                    .map((line) => (
+                      <p key={line as string}>{line}</p>
+                    ))}
+                  {search?.passengers && <p>{formatFlightPassengers(search.passengers)}</p>}
+                </div>
+              )}
             </div>
 
             <div className="flex min-w-0 flex-1 items-center gap-4 lg:mt-3 lg:block">

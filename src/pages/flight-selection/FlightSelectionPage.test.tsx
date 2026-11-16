@@ -20,9 +20,9 @@ describe('FlightSelectionPage', () => {
     render(<FlightSelectionPage />)
     const flight = screen.getByRole('article', { name: 'Рейс Аэрофлот' })
     expect(within(flight).getByText('12 440 ₽')).toBeInTheDocument()
-    expect(within(flight).getByText('За 1 билет')).toBeInTheDocument()
+    expect(within(flight).getByText('за билет')).toBeInTheDocument()
     fireEvent.click(flight)
-    expect(screen.getAllByText('62 200 ₽')).toHaveLength(2)
+    expect(screen.getAllByText('62 200 ₽')).toHaveLength(3)
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
     fireEvent.change(screen.getByRole('textbox', { name: 'Цена до' }), {
       target: { value: '12000' },
@@ -65,10 +65,16 @@ describe('FlightSelectionPage', () => {
     )
     fireEvent.change(screen.getByRole('combobox', { name: 'Куда' }), { target: { value: 'Сочи' } })
     fireEvent.click(screen.getByRole('checkbox', { name: 'Билет в одну сторону' }))
+    fireEvent.click(screen.getByRole('button', { name: /Когда/ }))
+    fireEvent.click(
+      within(screen.getByRole('dialog', { name: 'Выбор даты' })).getByRole('button', {
+        current: 'date',
+      }),
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Найти билеты' }))
     unmount()
     render(<FlightSelectionPage />)
-    expect(screen.getByText(/Москва → Сочи · Дата не выбрана/)).toBeInTheDocument()
+    expect(screen.getByText(/Москва → Сочи ·/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
     fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
     expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')
@@ -292,7 +298,7 @@ describe('FlightSelectionPage', () => {
     )
     render(<FlightSelectionPage />)
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
-    expect(screen.getAllByText('24 880 ₽')).toHaveLength(2)
+    expect(screen.getAllByText('24 880 ₽')).toHaveLength(3)
     fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
     expect(screen.getByRole('heading', { name: 'Выберите рейс туда' })).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Рейсы выбраны')

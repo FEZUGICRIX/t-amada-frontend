@@ -28,8 +28,15 @@ describe('Страница страховки', () => {
       'selected-room',
       JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
     )
+    sessionStorage.setItem(
+      'hotel-period',
+      JSON.stringify({ start: '2026-12-01', end: '2026-12-03' }),
+    )
     render(<InsurancePage />)
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('68 680 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('112 480 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('43 800 ₽ за ночь × 2 ночи')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('2 взрослых')
+    expect(screen.getByLabelText('Ваша поездка')).not.toHaveTextContent('Младенцы')
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('Отель')
     expect(screen.getByLabelText('Ваша поездка')).not.toHaveTextContent('Sea Galaxy')
   })
@@ -144,5 +151,59 @@ describe('Страница страховки', () => {
       }),
     )
     expect(screen.getByRole('dialog')).toHaveTextContent('Даты страховки не выбраны')
+  })
+  it('восстанавливает вручную выбранные даты страховки и показывает их в описании', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({
+        destination: 'Сочи',
+        isOneWay: true,
+        passengers: { adults: 1, children: 0, infants: 0 },
+      }),
+    )
+    sessionStorage.setItem(
+      'insurance-period',
+      JSON.stringify({ start: '2026-12-01', end: '2026-12-07' }),
+    )
+    render(<InsurancePage />)
+    expect(screen.getByRole('button', { name: /Начало: 1 декабря 2026/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Окончание: 7 декабря 2026/ })).toBeInTheDocument()
+    fireEvent.click(
+      within(screen.getByRole('article', { name: 'Базовая защита' })).getByRole('button', {
+        name: 'Подробнее о покрытии',
+      }),
+    )
+    expect(screen.getByRole('dialog')).toHaveTextContent('1 декабря - 7 декабря')
+  })
+  it('не продолжает с выбранной страховкой без дат', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ isOneWay: true, passengers: { adults: 1, children: 0, infants: 0 } }),
+    )
+    render(<InsurancePage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Базовая защита' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('Выберите начало и окончание периода')
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+  it('считает страховку на всех пассажиров, включая младенца', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ isOneWay: true, passengers: { adults: 2, children: 1, infants: 1 } }),
+    )
+    const { unmount } = render(<InsurancePage />)
+    const basic = screen.getByRole('article', { name: 'Базовая защита' })
+    expect(within(basic).getByText('1 490 ₽')).toBeInTheDocument()
+    expect(basic).toHaveTextContent('5 960 ₽ за всех')
+    fireEvent.click(within(basic).getByRole('button', { name: 'Подробнее о покрытии' }))
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).toHaveTextContent('5 960 ₽')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Выбрать за 5 960 ₽' }))
+    const summary = screen.getByLabelText('Ваша поездка')
+    expect(summary).toHaveTextContent('1 490 ₽ × 4 пассажира')
+    expect(summary).toHaveTextContent('5 960 ₽')
+    unmount()
+    render(<InsurancePage />)
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('5 960 ₽')
   })
 })

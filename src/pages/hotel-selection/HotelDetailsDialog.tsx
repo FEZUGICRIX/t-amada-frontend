@@ -2,7 +2,15 @@ import { Link } from '@tanstack/react-router'
 import { useEffect, useRef, type KeyboardEvent } from 'react'
 import type { Hotel } from './hotels'
 
-function HotelDetailsDialog({ hotel, onClose }: { hotel: Hotel; onClose: () => void }) {
+function HotelDetailsDialog({
+  hotel,
+  onClose,
+  onBeforeChoose,
+}: {
+  hotel: Hotel
+  onClose: () => void
+  onBeforeChoose?: () => boolean
+}) {
   const dialogRef = useRef<HTMLElement>(null)
   const closeRef = useRef(onClose)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
@@ -93,6 +101,12 @@ function HotelDetailsDialog({ hotel, onClose }: { hotel: Hotel; onClose: () => v
         <Link
           to="/hotels/$hotelId/rooms"
           params={{ hotelId: hotel.id }}
+          onClick={(event) => {
+            if (onBeforeChoose && !onBeforeChoose()) {
+              event.preventDefault()
+              onClose()
+            }
+          }}
           className="mt-6 flex h-11 w-full items-center justify-center rounded-xl bg-accent text-sm font-semibold text-text-primary no-underline hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           Выбрать номер

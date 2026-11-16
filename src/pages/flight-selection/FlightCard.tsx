@@ -1,11 +1,12 @@
 import type { Flight } from './types'
-import formatPrice from './formatPrice'
+import CardPrice from '@/shared/CardPrice'
 
 type FlightCardProps = {
   flight: Flight
   isSelected: boolean
   onSelect: (flightId: string) => void
   groupPrice?: boolean
+  payingPassengers?: number
 }
 
 function getStopsLabel(stopsCount: number) {
@@ -20,7 +21,13 @@ function getStopsLabel(stopsCount: number) {
   return `${stopsCount} пересадки`
 }
 
-function FlightCard({ flight, isSelected, onSelect, groupPrice = false }: FlightCardProps) {
+function FlightCard({
+  flight,
+  isSelected,
+  onSelect,
+  groupPrice = false,
+  payingPassengers = 1,
+}: FlightCardProps) {
   const className = flight.travelClass === 'economy' ? 'эконом' : 'бизнес'
 
   const baggageLabel = flight.baggage === 'без багажа' ? flight.baggage : `багаж ${flight.baggage}`
@@ -94,10 +101,13 @@ function FlightCard({ flight, isSelected, onSelect, groupPrice = false }: Flight
       </div>
 
       <div className="col-span-2 mt-3 flex items-end justify-between gap-3 border-t border-[#e1e4e8] pt-3 md:col-span-1 md:mt-0 md:min-w-[130px] md:flex-col md:items-end md:gap-3 md:border-0 md:pt-0">
-        <strong className="min-w-0 break-words text-lg leading-6">
-          {formatPrice(flight.price)}
-        </strong>
-        {groupPrice && <span className="text-xs text-text-secondary">За 1 билет</span>}
+        <CardPrice
+          price={flight.price}
+          unit={groupPrice ? 'за билет' : 'за 1 билет'}
+          total={payingPassengers > 1 ? flight.price * payingPassengers : null}
+          totalLabel="за всех"
+          align="left"
+        />
 
         <button
           className={`h-9 cursor-pointer rounded-xl border-0 px-4 text-[13px] font-semibold text-text-primary transition-colors hover:brightness-95 active:brightness-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary ${

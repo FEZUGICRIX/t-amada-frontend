@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { outboundFlights, returnFlights } from '@/pages/flight-selection/mockFlights'
 import formatPrice from '@/pages/flight-selection/formatPrice'
@@ -10,8 +10,12 @@ import FilterTrigger from '@/shared/FilterTrigger'
 import { defaultHotelFilters, filterHotels, type HotelFilters } from './hotelFilters'
 import HotelDetailsDialog from './HotelDetailsDialog'
 import { getRoomsForHotel } from './rooms'
+import TripPeriodPicker from '@/shared/TripPeriod'
+import { formatTripPeriod, getNights, readTripPeriod } from '@/shared/tripPeriodData'
+import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
 
 function HotelSelectionPage() {
+  const navigate = useNavigate()
   const [visibleCount, setVisibleCount] = useState(3)
   const [savedRoom, setSavedRoom] = useState(() => {
     try {
@@ -81,6 +85,15 @@ function HotelSelectionPage() {
       return { search: null, selected: null }
     }
   })
+  const [hotelPeriod, setHotelPeriod] = useState(() => {
+    const automatic = readTripPeriod('hotel-period', trip.search)
+    return !trip.search?.isOneWay && !getNights(automatic)
+      ? readTripPeriod('hotel-period', { isOneWay: true })
+      : automatic
+  })
+  const nights = getNights(hotelPeriod)
+  const [periodError, setPeriodError] = useState(0)
+  const periodRef = useRef<HTMLDivElement>(null)
   const outbound = outboundFlights.find((flight) => flight.id === trip.selected?.outbound)
   const inbound = trip.search?.isOneWay
     ? undefined
@@ -106,17 +119,22 @@ function HotelSelectionPage() {
           </h1>
           <button
             type="button"
-            disabled
-            title="Следующий этап ещё не готов"
-            className="text-sm text-text-secondary disabled:cursor-not-allowed"
+            onClick={() => {
+              sessionStorage.removeItem('selected-room')
+              setSavedRoom(null)
+              void navigate({ to: '/insurance' })
+            }}
+            className="cursor-pointer text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             Пропустить этап
           </button>
         </div>
         <p className="mt-1.5 text-[13px] leading-5 text-text-secondary md:mt-2 md:text-sm">
           {trip.search?.destination || 'Направление не выбрано'} ·{' '}
-          {date(trip.search?.departureDate)}{' '}
-          {trip.search?.isOneWay ? '' : `- ${date(trip.search?.returnDate)}`} ·{' '}
+          {trip.search?.isOneWay
+            ? formatTripPeriod(hotelPeriod)
+            : `${date(trip.search?.departureDate)} - ${date(trip.search?.returnDate)}`}{' '}
+          ·{' '}
           {trip.search
             ? trip.search.passengers.adults +
               trip.search.passengers.children +
@@ -126,6 +144,22 @@ function HotelSelectionPage() {
         </p>
         <BookingSteps current={1} />
       </div>
+      {(trip.search?.isOneWay ||
+        (trip.search && !getNights(readTripPeriod('hotel-period', trip.search)))) && (
+        <div ref={periodRef}>
+          <TripPeriodPicker
+            label="Даты проживания"
+            minimumNights={1}
+            period={hotelPeriod}
+            errorAttempt={periodError}
+            onChange={(period) => {
+              setHotelPeriod(period)
+              if (period.start && period.end) setPeriodError(0)
+              sessionStorage.setItem('hotel-period', JSON.stringify(period))
+            }}
+          />
+        </div>
+      )}
       <div className="mt-3 grid gap-x-8 lg:mt-4 lg:grid-cols-[minmax(0,1fr)_330px] lg:items-start">
         <div className="min-w-0 lg:contents">
           <div className="min-w-0 lg:col-start-1 lg:row-start-1">
@@ -162,6 +196,7 @@ function HotelSelectionPage() {
                 <HotelCard
                   key={hotel.id}
                   hotel={hotel}
+                  nights={nights}
                   selected={selectedHotel?.id === hotel.id}
                   onSelect={setDetailsHotel}
                 />
@@ -205,18 +240,8 @@ function HotelSelectionPage() {
               {selectedHotel?.name} · {selectedRoom.name}
             </p>
           )}
-          <div className="flex items-center justify-between gap-4 lg:mt-4">
-            <span className="text-sm">Авиабилет</span>
-            <strong>{formatPrice(price)}</strong>
-          </div>
-          {selectedRoom && (
-            <div className="mt-3 flex items-center justify-between gap-3 text-sm">
-              <span>Отель</span>
-              <strong className="shrink-0 whitespace-nowrap">
-                {formatPrice(selectedRoom.price)}
-              </strong>
-            </div>
-          )}
+          <FlightPriceRow />
+          {selectedRoom && <HotelPriceRow nightlyPrice={selectedRoom.price} nights={nights} />}
           {selectedRoom && (
             <button
               type="button"
@@ -231,12 +256,27 @@ function HotelSelectionPage() {
           )}
           <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
             <strong>Итого</strong>
-            <strong>{formatPrice(price + (selectedRoom?.price ?? 0))}</strong>
+            <strong>
+              {selectedRoom && !nights
+                ? 'Укажите даты'
+                : formatPrice(price + (selectedRoom?.price ?? 0) * (nights ?? 0))}
+            </strong>
           </div>
         </aside>
       </div>
       {detailsHotel && (
-        <HotelDetailsDialog hotel={detailsHotel} onClose={() => setDetailsHotel(null)} />
+        <HotelDetailsDialog
+          hotel={detailsHotel}
+          onClose={() => setDetailsHotel(null)}
+          onBeforeChoose={() => {
+            if (trip.search && !nights) {
+              setPeriodError((count) => count + 1)
+              periodRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+              return false
+            }
+            return true
+          }}
+        />
       )}
     </section>
   )

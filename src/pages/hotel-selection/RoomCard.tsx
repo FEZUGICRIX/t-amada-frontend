@@ -1,14 +1,16 @@
-import formatPrice from '@/pages/flight-selection/formatPrice'
+import CardPrice from '@/shared/CardPrice'
 import type { Room } from './rooms'
 
 function RoomCard({
   room,
   selected,
   onSelect,
+  nights,
 }: {
   room: Room
   selected: boolean
   onSelect: (room: Room) => void
+  nights?: number | null
 }) {
   return (
     <article
@@ -30,7 +32,12 @@ function RoomCard({
         <p className="mt-2 text-xs text-text-secondary">{room.amenities.join(' · ')}</p>
       </div>
       <div className="flex items-end justify-between gap-3 sm:flex-col">
-        <strong className="shrink-0 whitespace-nowrap text-base">{formatPrice(room.price)}</strong>
+        <CardPrice
+          price={room.price}
+          unit="за ночь"
+          total={nights && nights > 1 ? room.price * nights : null}
+          totalLabel="за проживание"
+        />
         <button
           type="button"
           aria-pressed={selected}

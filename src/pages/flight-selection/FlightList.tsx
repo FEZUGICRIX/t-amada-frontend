@@ -8,6 +8,7 @@ type FlightListProps = {
   onSelect: (flightId: string) => void
   isLoading?: boolean
   groupPrice?: boolean
+  payingPassengers?: number
 }
 
 const FLIGHTS_PER_PAGE = 3
@@ -18,6 +19,7 @@ function FlightList({
   onSelect,
   isLoading = false,
   groupPrice = false,
+  payingPassengers = 1,
 }: FlightListProps) {
   const [visibleCount, setVisibleCount] = useState(FLIGHTS_PER_PAGE)
   const loaderRef = useRef<HTMLDivElement>(null)
@@ -77,6 +79,7 @@ function FlightList({
             isSelected={flight.id === selectedFlightId}
             onSelect={onSelect}
             groupPrice={groupPrice}
+            payingPassengers={payingPassengers}
             key={flight.id}
           />
         ))}

@@ -4,7 +4,7 @@ const NAVIGATION_BUTTON_CLASS_NAME =
   'grid size-8 cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-0 text-2xl leading-none text-text-primary enabled:hover:bg-[#f2f3f5] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-default disabled:text-[#c7cdd4]'
 
 const DAY_CLASS_NAME =
-  'relative h-7 cursor-pointer rounded-lg border-0 p-0 text-[10px] leading-[14px] text-text-primary enabled:hover:bg-[#fff3a3] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-text-primary disabled:cursor-default disabled:text-[#c7cdd4] md:text-[11px]'
+  'relative h-7 cursor-pointer rounded-lg border-0 p-0 text-[10px] leading-[14px] text-text-primary enabled:hover:bg-[#fff3a3] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-text-primary disabled:cursor-default md:text-[11px]'
 
 const MONTH_NAMES = [
   'Январь',
@@ -45,6 +45,8 @@ type DatePickerProps = {
   returnDate: Date | null
   selectionMode: SelectionMode
   onSelect: (date: Date) => void
+  minimumNights?: number
+  embedded?: boolean
 }
 
 function startOfDay(date: Date) {
@@ -71,7 +73,14 @@ function getCalendarDates(year: number, month: number) {
   )
 }
 
-function DatePicker({ departureDate, returnDate, selectionMode, onSelect }: DatePickerProps) {
+function DatePicker({
+  departureDate,
+  returnDate,
+  selectionMode,
+  onSelect,
+  minimumNights = 0,
+  embedded = false,
+}: DatePickerProps) {
   const today = startOfDay(new Date())
   const initialDate =
     selectionMode === 'return' && returnDate ? returnDate : (departureDate ?? today)
@@ -121,7 +130,7 @@ function DatePicker({ departureDate, returnDate, selectionMode, onSelect }: Date
   return (
     <div
       className="mx-auto mt-3 w-full max-w-[462px] rounded-[14px] border border-[#e3e5e8] bg-background-primary p-3 shadow-[0_8px_24px_rgb(17_17_17_/_8%)] md:mt-5 md:rounded-2xl md:p-4"
-      role="dialog"
+      role={embedded ? 'group' : 'dialog'}
       aria-label="Выбор даты"
     >
       <div className="grid grid-cols-[32px_minmax(0,1fr)_32px] items-center gap-2">
@@ -188,18 +197,24 @@ function DatePicker({ departureDate, returnDate, selectionMode, onSelect }: Date
           const isBeforeDeparture =
             selectionMode === 'return' &&
             departureDate !== null &&
-            dateTime < departureDate.getTime()
+            dateTime <
+              new Date(
+                departureDate.getFullYear(),
+                departureDate.getMonth(),
+                departureDate.getDate() + minimumNights,
+              ).getTime()
           const isDisabled =
             dateTime < today.getTime() || isBeforeDeparture || date.getFullYear() > maxYear
           const dayClassName = [
             DAY_CLASS_NAME,
             isOutsideMonth ? 'text-[#aeb4bd]' : '',
+            isDisabled && !isDeparture && !isReturn ? 'disabled:text-[#c7cdd4]' : '',
             isToday
               ? "after:absolute after:right-2 after:bottom-[3px] after:left-2 after:h-0.5 after:rounded-full after:bg-accent after:content-['']"
               : '',
             isInRange ? 'bg-[#fff3a3]' : '',
             isDeparture || isReturn
-              ? 'bg-accent font-semibold enabled:hover:bg-accent enabled:hover:brightness-[0.98]'
+              ? 'bg-accent font-semibold text-text-primary disabled:text-text-primary enabled:hover:bg-accent enabled:hover:brightness-[0.98]'
               : '',
           ]
             .filter(Boolean)
