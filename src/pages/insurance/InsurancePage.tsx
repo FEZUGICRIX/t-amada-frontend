@@ -19,6 +19,11 @@ function InsurancePage() {
     sessionStorage.getItem('selected-insurance'),
   )
   const [continued, setContinued] = useState(false)
+  const [transferRemoved] = useState(() => {
+    const notice = sessionStorage.getItem('transfer-removed-notice') === '1'
+    sessionStorage.removeItem('transfer-removed-notice')
+    return notice
+  })
   const [search] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('trip-search') || 'null') as {
@@ -110,6 +115,11 @@ function InsurancePage() {
         <p className="mt-2 text-sm text-text-secondary">Стоимость указана за всех пассажиров</p>
         <BookingSteps current={2} />
       </header>
+      {transferRemoved && (
+        <p role="status" className="mt-4 rounded-xl bg-[#fff7d6] p-3 text-sm">
+          Отель удалён, выбранный трансфер тоже удалён.
+        </p>
+      )}
       {search?.isOneWay ? (
         <div ref={periodRef}>
           <TripPeriodPicker

@@ -10,6 +10,61 @@ vi.mock('@tanstack/react-router', () => ({
 describe('Экран трансфера', () => {
   beforeEach(() => sessionStorage.clear())
 
+  it('учитывает всех пассажиров и сохраняет выбор и направления', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ passengers: { adults: 2, children: 1, infants: 1 } }),
+    )
+    const { unmount } = render(<TransferPage />)
+    const standard = screen.getByRole('article', { name: 'Стандарт' })
+    expect(within(standard).getByRole('button', { name: 'Выбрать' })).toBeDisabled()
+    fireEvent.click(standard)
+    expect(screen.getByRole('button', { name: 'Продолжить' })).toBeDisabled()
+    fireEvent.click(screen.getByRole('article', { name: 'Минивэн' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Из аэропорта и обратно' }))
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('3 800 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('В аэропорт: 1 900 ₽')
+    unmount()
+    render(<TransferPage />)
+    expect(
+      within(screen.getByRole('article', { name: 'Минивэн' })).getByRole('button', {
+        name: 'Выбрано',
+      }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Из аэропорта и обратно' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Пропустить этап' }))
+    expect(sessionStorage.getItem('selected-transfer')).toBeNull()
+  })
+
+  it('сбрасывает выбор при увеличении числа пассажиров и показывает пустое состояние', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ passengers: { adults: 2, children: 0, infants: 0 } }),
+    )
+    const { unmount } = render(<TransferPage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Стандарт' }))
+    unmount()
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ passengers: { adults: 6, children: 1, infants: 0 } }),
+    )
+    render(<TransferPage />)
+    expect(sessionStorage.getItem('selected-transfer')).toBeNull()
+    expect(screen.getByText('Нет автомобиля для такого количества пассажиров.')).toBeInTheDocument()
+    expect(screen.getByText(/Выбор трансфера сброшен/)).toBeInTheDocument()
+  })
+
   it('сохраняет время подачи, восстанавливает его и отменяет изменения', () => {
     sessionStorage.setItem(
       'selected-room',

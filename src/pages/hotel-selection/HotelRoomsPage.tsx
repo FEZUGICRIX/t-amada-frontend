@@ -8,6 +8,7 @@ import { getRoomsForHotel, type Room } from './rooms'
 import { getTripFlightPrice } from './tripFlightPrice'
 import { readHotelNights } from '@/shared/tripPeriodData'
 import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
+import { clearTransfer } from '@/pages/transfer/transferSelection'
 
 function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const { hotelId } = useParams({ from: '/hotels/$hotelId/rooms' })
@@ -36,6 +37,15 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   )
   const selected = rooms.find((room) => room.id === selectedId)
   function selectRoom(room: Room) {
+    try {
+      const previous = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
+        hotelId?: string
+      } | null
+      if (previous?.hotelId && previous.hotelId !== hotelId && clearTransfer())
+        sessionStorage.setItem('transfer-removed-notice', '1')
+    } catch {
+      clearTransfer()
+    }
     setSelectedId(room.id)
     setContinued(false)
     sessionStorage.setItem('selected-room', JSON.stringify({ hotelId, roomId: room.id }))

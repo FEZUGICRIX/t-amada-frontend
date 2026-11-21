@@ -13,9 +13,11 @@ import { getRoomsForHotel } from './rooms'
 import TripPeriodPicker from '@/shared/TripPeriod'
 import { formatTripPeriod, getNights, readTripPeriod } from '@/shared/tripPeriodData'
 import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
+import { clearTransfer } from '@/pages/transfer/transferSelection'
 
 function HotelSelectionPage() {
   const navigate = useNavigate()
+  const [transferRemoved, setTransferRemoved] = useState(false)
   const [visibleCount, setVisibleCount] = useState(3)
   const [savedRoom, setSavedRoom] = useState(() => {
     try {
@@ -121,6 +123,7 @@ function HotelSelectionPage() {
             type="button"
             onClick={() => {
               sessionStorage.removeItem('selected-room')
+              if (clearTransfer()) sessionStorage.setItem('transfer-removed-notice', '1')
               setSavedRoom(null)
               void navigate({ to: '/insurance' })
             }}
@@ -144,6 +147,11 @@ function HotelSelectionPage() {
         </p>
         <BookingSteps current={1} />
       </div>
+      {transferRemoved && (
+        <p role="status" className="mt-4 rounded-xl bg-[#fff7d6] p-3 text-sm">
+          Отель удалён, выбранный трансфер тоже удалён.
+        </p>
+      )}
       {(trip.search?.isOneWay ||
         (trip.search && !getNights(readTripPeriod('hotel-period', trip.search)))) && (
         <div ref={periodRef}>
@@ -247,6 +255,7 @@ function HotelSelectionPage() {
               type="button"
               onClick={() => {
                 sessionStorage.removeItem('selected-room')
+                setTransferRemoved(clearTransfer())
                 setSavedRoom(null)
               }}
               className="mt-2 text-sm font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2"

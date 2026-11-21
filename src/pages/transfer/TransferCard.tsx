@@ -5,18 +5,20 @@ function TransferCard({
   option,
   selected,
   roundTrip,
+  unavailable,
   onSelect,
 }: {
   option: TransferOption
   selected: boolean
   roundTrip: boolean
+  unavailable: boolean
   onSelect: () => void
 }) {
   return (
     <article
       aria-label={option.name}
-      onClick={onSelect}
-      className={`grid cursor-pointer grid-cols-[44px_minmax(0,1fr)] gap-3 rounded-xl border bg-white p-4 transition-shadow hover:shadow-sm md:grid-cols-[44px_minmax(0,1fr)_auto] ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
+      onClick={unavailable ? undefined : onSelect}
+      className={`grid grid-cols-[44px_minmax(0,1fr)] gap-3 rounded-xl border bg-white p-4 transition-shadow md:grid-cols-[44px_minmax(0,1fr)_auto] ${unavailable ? 'opacity-60' : 'cursor-pointer hover:shadow-sm'} ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
     >
       <span
         aria-hidden="true"
@@ -30,6 +32,9 @@ function TransferCard({
           {option.vehicle} · до {option.capacity} пассажиров
         </p>
         <p className="text-xs leading-5 text-text-secondary">{option.description}</p>
+        {unavailable && (
+          <p className="mt-1 text-xs text-text-secondary">Недостаточно мест для всех пассажиров</p>
+        )}
       </div>
       <div className="col-span-2 flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 md:col-span-1 md:flex-col md:items-end md:border-0 md:pt-0">
         <CardPrice
@@ -42,11 +47,12 @@ function TransferCard({
         <button
           type="button"
           aria-pressed={selected}
+          disabled={unavailable}
           onClick={(event) => {
             event.stopPropagation()
             onSelect()
           }}
-          className={`h-9 cursor-pointer rounded-xl px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 ${selected ? 'bg-accent' : 'bg-[#e7e9ec] hover:bg-[#dfe2e6]'}`}
+          className={`h-9 rounded-xl px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed ${selected ? 'bg-accent' : 'bg-[#e7e9ec] enabled:cursor-pointer enabled:hover:bg-[#dfe2e6]'}`}
         >
           {selected ? 'Выбрано' : 'Выбрать'}
         </button>

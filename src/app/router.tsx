@@ -1,4 +1,4 @@
-import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router'
+import { createRootRoute, createRoute, createRouter, redirect } from '@tanstack/react-router'
 import App from './App'
 import FlightsRoutePage from '@/pages/flight-selection/FlightsRoutePage'
 import TripSearchPage from '@/pages/trip-search/TripSearchPage'
@@ -6,6 +6,7 @@ import HotelSelectionPage from '@/pages/hotel-selection/HotelSelectionPage'
 import HotelRoomsRoutePage from '@/pages/hotel-selection/HotelRoomsRoutePage'
 import InsurancePage from '@/pages/insurance/InsurancePage'
 import TransferPage from '@/pages/transfer/TransferPage'
+import { readTransferTrip } from '@/pages/transfer/transferTrip'
 
 const rootRoute = createRootRoute({
   component: App,
@@ -45,7 +46,15 @@ const routeTree = rootRoute.addChildren([
   hotelsRoute,
   hotelRoomsRoute,
   insuranceRoute,
-  createRoute({ getParentRoute: () => rootRoute, path: '/transfer', component: TransferPage }),
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/transfer',
+    component: TransferPage,
+    beforeLoad: () => {
+      const trip = readTransferTrip()
+      if (!trip.hotel || !trip.room) throw redirect({ to: '/insurance' })
+    },
+  }),
 ])
 
 export const router = createRouter({
