@@ -71,3 +71,13 @@ export function InsurancePriceRow({ price, passengers }: { price: number; passen
     />
   )
 }
+
+export function TransferPriceRow({ price, trips }: { price: number; trips: number }) {
+  return (
+    <Row
+      label="Трансфер"
+      price={formatPrice(price * trips)}
+      details={`${formatPrice(price)} × ${trips} ${trips === 1 ? 'поездка' : 'поездки'}`}
+    />
+  )
+}

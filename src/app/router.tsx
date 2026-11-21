@@ -5,6 +5,7 @@ import TripSearchPage from '@/pages/trip-search/TripSearchPage'
 import HotelSelectionPage from '@/pages/hotel-selection/HotelSelectionPage'
 import HotelRoomsRoutePage from '@/pages/hotel-selection/HotelRoomsRoutePage'
 import InsurancePage from '@/pages/insurance/InsurancePage'
+import TransferPage from '@/pages/transfer/TransferPage'
 
 const rootRoute = createRootRoute({
   component: App,
@@ -44,6 +45,7 @@ const routeTree = rootRoute.addChildren([
   hotelsRoute,
   hotelRoomsRoute,
   insuranceRoute,
+  createRoute({ getParentRoute: () => rootRoute, path: '/transfer', component: TransferPage }),
 ])
 
 export const router = createRouter({

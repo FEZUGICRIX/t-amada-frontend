@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import BookingSteps from '@/shared/BookingSteps'
 import formatPrice from '@/pages/flight-selection/formatPrice'
@@ -14,6 +14,7 @@ import { FlightPriceRow, HotelPriceRow, InsurancePriceRow } from '@/shared/TripP
 import { getInsurancePassengerCount } from './insurancePrice'
 
 function InsurancePage() {
+  const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     sessionStorage.getItem('selected-insurance'),
   )
@@ -63,10 +64,17 @@ function InsurancePage() {
     setContinued(false)
     sessionStorage.setItem('selected-insurance', id)
   }
+  function continueTrip() {
+    if (trip.hotel && trip.room) {
+      void navigate({ to: '/transfer' })
+      return
+    }
+    setContinued(true)
+  }
   function skipInsurance() {
     setSelectedId(null)
     sessionStorage.removeItem('selected-insurance')
-    setContinued(true)
+    continueTrip()
   }
   return (
     <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
@@ -171,7 +179,7 @@ function InsurancePage() {
                   periodRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
                   return
                 }
-                setContinued(true)
+                continueTrip()
               }}
               className="h-10 rounded-xl bg-accent px-5 text-sm font-semibold text-text-primary disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
             >

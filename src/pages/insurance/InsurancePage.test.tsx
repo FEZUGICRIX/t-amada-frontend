@@ -3,12 +3,53 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import InsurancePage from './InsurancePage'
 
+const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }))
+
 vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => navigate,
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 
 describe('Страница страховки', () => {
-  beforeEach(() => sessionStorage.clear())
+  beforeEach(() => {
+    sessionStorage.clear()
+    navigate.mockClear()
+  })
+  it('переходит к трансферу после выбора страховки при выбранном отеле', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    render(<InsurancePage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Базовая защита' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(navigate).toHaveBeenCalledWith({ to: '/transfer' })
+    expect(sessionStorage.getItem('selected-insurance')).toBe('basic')
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+  it('переходит к трансферу при пропуске страховки и очищает её выбор', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem('selected-insurance', 'basic')
+    render(<InsurancePage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Пропустить этап' }))
+    expect(navigate).toHaveBeenCalledWith({ to: '/transfer' })
+    expect(sessionStorage.getItem('selected-insurance')).toBeNull()
+  })
+  it('не переходит к трансферу без дат выбранной страховки', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem('trip-search', JSON.stringify({ isOneWay: true }))
+    render(<InsurancePage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Базовая защита' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Продолжить' }))
+    expect(navigate).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('Выберите начало и окончание периода')
+  })
   it('показывает заголовок и варианты', () => {
     render(<InsurancePage />)
     expect(screen.getByRole('heading', { name: 'Выберите страховку' })).toBeInTheDocument()
@@ -59,6 +100,7 @@ describe('Страница страховки', () => {
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('0 ₽')
     expect(sessionStorage.getItem('selected-insurance')).toBeNull()
     expect(screen.getByRole('status')).toHaveTextContent('Следующий этап пока недоступен')
+    expect(navigate).not.toHaveBeenCalled()
   })
   it('выбирает страховку нажатием на карточку', () => {
     render(<InsurancePage />)
