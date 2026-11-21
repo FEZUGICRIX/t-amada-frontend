@@ -11,12 +11,43 @@ import formatPrice from '@/pages/flight-selection/formatPrice'
 import TransferCard from './TransferCard'
 import { transferOptions } from './transferOptions'
 import { formatTransferDate, readTransferTrip } from './transferTrip'
+import TransferDateField from './TransferDateField'
 
 function TransferPage() {
   const [trip] = useState(readTransferTrip)
   const [roundTrip, setRoundTrip] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [continued, setContinued] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [error, setError] = useState('')
+  const [schedule, setSchedule] = useState(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('transfer-schedule') || 'null')
+      if (
+        saved &&
+        saved.hotelId === trip.hotel?.id &&
+        saved?.outboundFlight === trip.outbound?.id &&
+        saved?.inboundFlight === trip.inbound?.id &&
+        saved?.departureDate === trip.search?.departureDate &&
+        saved?.flightReturnDate === trip.search?.returnDate
+      )
+        return saved
+    } catch {
+      sessionStorage.removeItem('transfer-schedule')
+    }
+    return {
+      hotelId: trip.hotel?.id,
+      outboundFlight: trip.outbound?.id,
+      inboundFlight: trip.inbound?.id,
+      departureDate: trip.search?.departureDate,
+      flightReturnDate: trip.search?.returnDate,
+      outboundDate: trip.search?.departureDate ?? '',
+      outboundTime: '',
+      returnDate: trip.search?.isOneWay ? '' : (trip.search?.returnDate ?? ''),
+      returnTime: '',
+    }
+  })
+  const [draft, setDraft] = useState(schedule)
   const selected = transferOptions.find((option) => option.id === selectedId)
   const airport = trip.outbound
     ? `Аэропорт ${trip.outbound.arrival.city}, ${trip.outbound.arrival.airport}`
@@ -93,9 +124,14 @@ function TransferPage() {
                 <h2 className="text-sm font-semibold [overflow-wrap:anywhere]">
                   {airport} → {hotel}
                 </h2>
+                {trip.hotel && (
+                  <p className="mt-1 text-xs text-text-secondary">
+                    Адрес отеля: {trip.hotel.address}
+                  </p>
+                )}
                 <p className="mt-1 text-xs leading-5 text-text-secondary">
-                  Прилёт: {formatTransferDate(trip.search?.departureDate)}
-                  {trip.outbound ? `, ${trip.outbound.arrival.time}` : ''}
+                  Подача: {formatTransferDate(schedule.outboundDate)}
+                  {schedule.outboundTime ? `, ${schedule.outboundTime}` : ', время не выбрано'}
                 </p>
               </div>
               {roundTrip && (
@@ -106,23 +142,134 @@ function TransferPage() {
                       ? `Аэропорт ${trip.inbound.departure.city}, ${trip.inbound.departure.airport}`
                       : airport}
                   </h2>
+                  {trip.hotel && (
+                    <p className="mt-1 text-xs text-text-secondary">
+                      Адрес отеля: {trip.hotel.address}
+                    </p>
+                  )}
                   <p className="mt-1 text-xs leading-5 text-text-secondary">
-                    Обратный вылет:{' '}
-                    {formatTransferDate(trip.search?.isOneWay ? null : trip.search?.returnDate)}
-                    {trip.inbound ? `, ${trip.inbound.departure.time}` : ''}
+                    Подача: {formatTransferDate(schedule.returnDate)}
+                    {schedule.returnTime ? `, ${schedule.returnTime}` : ', время не выбрано'}
                   </p>
                 </div>
               )}
             </div>
             <button
               type="button"
-              disabled
-              title="Изменение параметров пока недоступно"
-              className="h-9 shrink-0 cursor-not-allowed self-end rounded-lg px-3 text-sm font-semibold text-text-secondary disabled:opacity-60 md:self-center"
+              onClick={() => {
+                setDraft(schedule)
+                setError('')
+                setEditing(true)
+              }}
+              className="h-9 shrink-0 cursor-pointer self-end rounded-lg px-3 text-sm font-semibold hover:bg-[#f2f3f4] focus-visible:outline-2 md:self-center"
             >
               Изменить
             </button>
           </section>
+          {editing && (
+            <form
+              aria-label="Изменение времени трансфера"
+              className="space-y-4 rounded-xl border border-[#cfd3d8] bg-white p-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                if (
+                  !draft.outboundDate ||
+                  !draft.outboundTime ||
+                  (roundTrip && (!draft.returnDate || !draft.returnTime))
+                ) {
+                  setError('Укажите дату и время для каждого направления')
+                  return
+                }
+                if (
+                  roundTrip &&
+                  `${draft.returnDate}T${draft.returnTime}` <=
+                    `${draft.outboundDate}T${draft.outboundTime}`
+                ) {
+                  setError('Обратный трансфер должен быть позже трансфера в отель')
+                  return
+                }
+                if (
+                  trip.outbound &&
+                  trip.search?.departureDate &&
+                  `${draft.outboundDate}T${draft.outboundTime}` <
+                    `${trip.search.departureDate}T${trip.outbound.arrival.time}`
+                ) {
+                  setError('Трансфер в отель не может быть раньше прилёта')
+                  return
+                }
+                if (
+                  roundTrip &&
+                  trip.inbound &&
+                  trip.search?.returnDate &&
+                  `${draft.returnDate}T${draft.returnTime}` >=
+                    `${trip.search.returnDate}T${trip.inbound.departure.time}`
+                ) {
+                  setError('Обратный трансфер должен быть раньше вылета')
+                  return
+                }
+                setSchedule(draft)
+                sessionStorage.setItem('transfer-schedule', JSON.stringify(draft))
+                setError('')
+                setEditing(false)
+              }}
+            >
+              <h2 className="font-semibold">Дата и время подачи</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <TransferDateField
+                  label="Дата поездки в отель"
+                  value={draft.outboundDate}
+                  onChange={(value) => setDraft({ ...draft, outboundDate: value })}
+                />
+                <label className="text-sm">
+                  Время поездки в отель
+                  <input
+                    type="time"
+                    value={draft.outboundTime}
+                    onChange={(e) => setDraft({ ...draft, outboundTime: e.target.value })}
+                    className="mt-1 block h-11 w-full rounded-xl border border-[#cfd3d8] px-3"
+                  />
+                </label>
+                {roundTrip && (
+                  <>
+                    <TransferDateField
+                      label="Дата обратной поездки"
+                      value={draft.returnDate}
+                      onChange={(value) => setDraft({ ...draft, returnDate: value })}
+                    />
+                    <label className="text-sm">
+                      Время обратной поездки
+                      <input
+                        type="time"
+                        value={draft.returnTime}
+                        onChange={(e) => setDraft({ ...draft, returnTime: e.target.value })}
+                        className="mt-1 block h-11 w-full rounded-xl border border-[#cfd3d8] px-3"
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
+              {error && (
+                <p role="alert" className="text-sm text-red-700">
+                  {error}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="submit"
+                  className="h-10 cursor-pointer rounded-xl bg-accent px-4 text-sm font-semibold"
+                >
+                  Сохранить
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditing(false)}
+                  className="h-10 cursor-pointer rounded-xl bg-[#e7e9ec] px-4 text-sm font-semibold"
+                >
+                  Отмена
+                </button>
+              </div>
+            </form>
+          )}
           <div aria-label="Варианты трансфера" className="space-y-2">
             {transferOptions.map((option) => (
               <TransferCard
@@ -160,7 +307,23 @@ function TransferPage() {
             <button
               type="button"
               disabled={!selected}
-              onClick={() => setContinued(true)}
+              onClick={() => {
+                if (
+                  !schedule.outboundDate ||
+                  !schedule.outboundTime ||
+                  (roundTrip &&
+                    (!schedule.returnDate ||
+                      !schedule.returnTime ||
+                      `${schedule.returnDate}T${schedule.returnTime}` <=
+                        `${schedule.outboundDate}T${schedule.outboundTime}`))
+                ) {
+                  setDraft(schedule)
+                  setError('Укажите корректные дату и время для каждого направления')
+                  setEditing(true)
+                  return
+                }
+                setContinued(true)
+              }}
               className="h-10 cursor-pointer rounded-xl bg-accent px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary lg:w-full"
             >
               Продолжить

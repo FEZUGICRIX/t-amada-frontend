@@ -1,6 +1,7 @@
 export type Hotel = {
   id: string
   name: string
+  address: string
   stars: number
   description: string
   details: string
@@ -15,6 +16,7 @@ export const hotels: Hotel[] = [
   {
     id: 'sea-galaxy',
     name: 'Sea Galaxy Hotel Congress & SPA',
+    address: 'Сочи, улица Черноморская, 4',
     stars: 4,
     description: 'Сочи, рядом с морем',
     details:
@@ -29,6 +31,7 @@ export const hotels: Hotel[] = [
   {
     id: 'pullman',
     name: 'Pullman Sochi Centre',
+    address: 'Сочи, улица Орджоникидзе, 11А',
     stars: 5,
     description: 'Сочи, центр города',
     details:
@@ -43,6 +46,7 @@ export const hotels: Hotel[] = [
   {
     id: 'radisson',
     name: 'Radisson Collection Paradise Resort',
+    address: 'Сочи, улица 65 лет Победы, 50',
     stars: 5,
     description: 'Сочи, рядом с морем',
     details:
@@ -57,6 +61,7 @@ export const hotels: Hotel[] = [
   {
     id: 'demo-hotel',
     name: 'Отель у моря',
+    address: 'Сочи, Приморская улица, 1',
     stars: 3,
     description: 'Сочи',
     details: 'Отель в Сочи с рестораном и Wi-Fi. Подойдёт для отдыха и прогулок по городу.',
