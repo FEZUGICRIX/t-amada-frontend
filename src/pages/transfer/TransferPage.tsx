@@ -12,11 +12,24 @@ import TransferCard from './TransferCard'
 import { transferOptions } from './transferOptions'
 import { formatTransferDate, readTransferTrip } from './transferTrip'
 import TransferDateField from './TransferDateField'
+import { clearTransfer, readTransferSelection } from './transferSelection'
 
 function TransferPage() {
   const [trip] = useState(readTransferTrip)
-  const [roundTrip, setRoundTrip] = useState(false)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const flightKey = JSON.stringify([
+    trip.outbound?.id,
+    trip.inbound?.id,
+    trip.search?.departureDate,
+    trip.search?.returnDate,
+  ])
+  const [initialSelection] = useState(() =>
+    readTransferSelection(trip.hotel?.id, trip.passengers, flightKey),
+  )
+  const [roundTrip, setRoundTrip] = useState(initialSelection.selection?.roundTrip ?? false)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    initialSelection.selection?.optionId ?? null,
+  )
+  const [selectionNotice, setSelectionNotice] = useState(initialSelection.invalid)
   const [continued, setContinued] = useState(false)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState('')
@@ -80,6 +93,7 @@ function TransferPage() {
             type="button"
             onClick={() => {
               setSelectedId(null)
+              clearTransfer()
               setContinued(true)
             }}
             className="cursor-pointer text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -105,6 +119,16 @@ function TransferPage() {
             aria-pressed={roundTrip === value}
             onClick={() => {
               setRoundTrip(value)
+              if (selectedId && trip.hotel)
+                sessionStorage.setItem(
+                  'selected-transfer',
+                  JSON.stringify({
+                    optionId: selectedId,
+                    roundTrip: value,
+                    hotelId: trip.hotel.id,
+                    flightKey,
+                  }),
+                )
               setContinued(false)
             }}
             className={`min-h-10 cursor-pointer rounded-lg px-3 py-2 text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 md:text-sm ${roundTrip === value ? 'bg-white font-semibold shadow-sm' : 'hover:bg-white/50'}`}
@@ -271,14 +295,36 @@ function TransferPage() {
             </form>
           )}
           <div aria-label="Варианты трансфера" className="space-y-2">
+            {selectionNotice && (
+              <p role="status" className="rounded-xl bg-[#fff7d6] p-3 text-sm">
+                Выбор трансфера сброшен. Проверьте отель и количество пассажиров.
+              </p>
+            )}
+            {transferOptions.every((option) => option.capacity < trip.passengers) && (
+              <p role="status" className="rounded-xl border border-[#e1e4e8] p-4 text-sm">
+                Нет автомобиля для такого количества пассажиров.
+              </p>
+            )}
             {transferOptions.map((option) => (
               <TransferCard
                 key={option.id}
                 option={option}
                 selected={selectedId === option.id}
                 roundTrip={roundTrip}
+                unavailable={option.capacity < trip.passengers}
                 onSelect={() => {
                   setSelectedId(option.id)
+                  if (trip.hotel)
+                    sessionStorage.setItem(
+                      'selected-transfer',
+                      JSON.stringify({
+                        optionId: option.id,
+                        roundTrip,
+                        hotelId: trip.hotel.id,
+                        flightKey,
+                      }),
+                    )
+                  setSelectionNotice(false)
                   setContinued(false)
                 }}
               />

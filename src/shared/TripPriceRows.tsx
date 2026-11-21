@@ -77,7 +77,11 @@ export function TransferPriceRow({ price, trips }: { price: number; trips: numbe
     <Row
       label="Трансфер"
       price={formatPrice(price * trips)}
-      details={`${formatPrice(price)} × ${trips} ${trips === 1 ? 'поездка' : 'поездки'}`}
+      details={
+        trips === 1
+          ? `В отель: ${formatPrice(price)}`
+          : [`В отель: ${formatPrice(price)}`, `В аэропорт: ${formatPrice(price)}`]
+      }
     />
   )
 }
