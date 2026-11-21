@@ -37,6 +37,20 @@ function BookingSteps({ current }: { current: number }) {
             >
               {index + 1}. {step}
             </Link>
+          ) : index === 2 && current === 3 ? (
+            <Link
+              to="/insurance"
+              className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
+            >
+              {index + 1}. {step}
+            </Link>
+          ) : index === 3 && current === 2 && hasSelectedHotel ? (
+            <Link
+              to="/transfer"
+              className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
+            >
+              {index + 1}. {step}
+            </Link>
           ) : (
             <span className="block px-3 py-1.5">
               {index + 1}. {step}

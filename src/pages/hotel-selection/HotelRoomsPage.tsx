@@ -24,7 +24,7 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
         hotelId: string
         roomId: string
       } | null
-      return saved?.hotelId === hotelId ? saved.roomId : null
+      return saved && saved.hotelId === hotelId ? saved.roomId : null
     } catch {
       return null
     }
