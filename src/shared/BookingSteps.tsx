@@ -1,7 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { outboundFlights, returnFlights } from '@/pages/flight-selection/mockFlights'
-import { hotels } from '@/pages/hotel-selection/hotels'
-import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
+import {
+  getRoomCapacity,
+  getTripPassengerCount,
+  readRoomSelection,
+  resolveSelectedRooms,
+} from '@/pages/hotel-selection/roomSelection'
 
 const steps = ['Авиабилет', 'Отель', 'Страховка', 'Трансфер']
 const paths = ['/flights', '/hotels', '/insurance', '/transfer'] as const
@@ -14,16 +18,13 @@ function BookingSteps({
   flightsComplete?: boolean
 }) {
   let hasSelectedHotel = false
+  let incompleteRooms = false
   let hasFlights = false
   try {
-    const selection = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
-      hotelId?: string
-      roomId?: string
-    } | null
-    const hotel = hotels.find((item) => item.id === selection?.hotelId)
-    hasSelectedHotel = Boolean(
-      hotel && getRoomsForHotel(hotel.price).some((room) => room.id === selection?.roomId),
-    )
+    const selectedRooms = resolveSelectedRooms(readRoomSelection())
+    hasSelectedHotel =
+      selectedRooms.length > 0 && getRoomCapacity(selectedRooms) >= getTripPassengerCount()
+    incompleteRooms = selectedRooms.length > 0 && !hasSelectedHotel
     const search = JSON.parse(sessionStorage.getItem('trip-search') || 'null') as {
       isOneWay?: boolean
       passengers?: { travelClass?: string }
@@ -58,7 +59,10 @@ function BookingSteps({
             className={`shrink-0 rounded-full text-[13px] leading-4 ${index === current ? 'bg-accent font-semibold text-text-primary shadow-[0_2px_8px_rgb(255_221_45_/_35%)]' : 'bg-white/80 text-text-secondary'}`}
           >
             {index !== current &&
-            (index === 0 || (hasFlights && (index !== 3 || hasSelectedHotel))) ? (
+            (index === 0 ||
+              (hasFlights &&
+                (!incompleteRooms || index === 1) &&
+                (index !== 3 || hasSelectedHotel))) ? (
               <Link
                 to={paths[index]}
                 className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"

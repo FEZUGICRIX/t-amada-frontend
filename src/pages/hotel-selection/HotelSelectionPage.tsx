@@ -9,31 +9,20 @@ import HotelFiltersPanel from './HotelFiltersPanel'
 import FilterTrigger from '@/shared/FilterTrigger'
 import { defaultHotelFilters, filterHotels, type HotelFilters } from './hotelFilters'
 import HotelDetailsDialog from './HotelDetailsDialog'
-import { getRoomsForHotel } from './rooms'
+import { getRoomNightlyTotal, readRoomSelection, resolveSelectedRooms } from './roomSelection'
 import TripPeriodPicker from '@/shared/TripPeriod'
 import { formatTripPeriod, getNights, readTripPeriod } from '@/shared/tripPeriodData'
-import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
+import { FlightPriceRow, HotelRoomsPriceRow } from '@/shared/TripPriceRows'
 import { clearTransfer } from '@/pages/transfer/transferSelection'
 
 function HotelSelectionPage() {
   const navigate = useNavigate()
   const [transferRemoved, setTransferRemoved] = useState(false)
   const [visibleCount, setVisibleCount] = useState(3)
-  const [savedRoom, setSavedRoom] = useState(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
-        hotelId: string
-        roomId: string
-      } | null
-    } catch {
-      return null
-    }
-  })
+  const [savedRoom, setSavedRoom] = useState(readRoomSelection)
   const selectedHotel = hotels.find((hotel) => hotel.id === savedRoom?.hotelId) ?? null
-  const selectedRoom =
-    savedRoom && selectedHotel?.id === savedRoom.hotelId
-      ? getRoomsForHotel(selectedHotel.price).find((room) => room.id === savedRoom.roomId)
-      : undefined
+  const selectedRooms = resolveSelectedRooms(savedRoom)
+  const nightlyTotal = getRoomNightlyTotal(selectedRooms)
   const [detailsHotel, setDetailsHotel] = useState<Hotel | null>(null)
   const [filters, setFilters] = useState<HotelFilters>(defaultHotelFilters)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -243,14 +232,14 @@ function HotelSelectionPage() {
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
         >
           <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
-          {selectedRoom && (
+          {selectedRooms.length > 0 && (
             <p className="hidden text-sm text-text-secondary lg:mt-3 lg:block">
-              {selectedHotel?.name} · {selectedRoom.name}
+              {selectedHotel?.name}
             </p>
           )}
           <FlightPriceRow />
-          {selectedRoom && <HotelPriceRow nightlyPrice={selectedRoom.price} nights={nights} />}
-          {selectedRoom && (
+          {selectedRooms.length > 0 && <HotelRoomsPriceRow rooms={selectedRooms} nights={nights} />}
+          {selectedRooms.length > 0 && (
             <button
               type="button"
               onClick={() => {
@@ -266,9 +255,9 @@ function HotelSelectionPage() {
           <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
             <strong>Итого</strong>
             <strong>
-              {selectedRoom && !nights
+              {selectedRooms.length > 0 && !nights
                 ? 'Укажите даты'
-                : formatPrice(price + (selectedRoom?.price ?? 0) * (nights ?? 0))}
+                : formatPrice(price + nightlyTotal * (nights ?? 0))}
             </strong>
           </div>
         </aside>

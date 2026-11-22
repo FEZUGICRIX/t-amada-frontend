@@ -7,8 +7,16 @@ import RoomCard from './RoomCard'
 import { getRoomsForHotel, type Room } from './rooms'
 import { getTripFlightPrice } from './tripFlightPrice'
 import { readHotelNights } from '@/shared/tripPeriodData'
-import { FlightPriceRow, HotelPriceRow } from '@/shared/TripPriceRows'
+import { FlightPriceRow, HotelRoomsPriceRow } from '@/shared/TripPriceRows'
 import { clearTransfer } from '@/pages/transfer/transferSelection'
+import {
+  getRoomCapacity,
+  getRoomNightlyTotal,
+  getTripPassengerCount,
+  readRoomSelection,
+  resolveSelectedRooms,
+  type RoomSelection,
+} from './roomSelection'
 
 function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const { hotelId } = useParams({ from: '/hotels/$hotelId/rooms' })
@@ -19,24 +27,21 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const [continued, setContinued] = useState(false)
   const [flightPrice] = useState(getTripFlightPrice)
   const [nights] = useState(readHotelNights)
-  const [selectedId, setSelectedId] = useState<string | null>(() => {
-    try {
-      const saved = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
-        hotelId: string
-        roomId: string
-      } | null
-      return saved && saved.hotelId === hotelId ? saved.roomId : null
-    } catch {
-      return null
-    }
+  const [selection, setSelection] = useState<RoomSelection | null>(() => {
+    const saved = readRoomSelection()
+    return saved?.hotelId === hotelId ? saved : null
   })
   const filtered = rooms.filter(
     (room) =>
       (capacity === 'all' || room.capacity === Number(capacity)) &&
       (!suiteOnly || room.category === 'suite'),
   )
-  const selected = rooms.find((room) => room.id === selectedId)
-  function selectRoom(room: Room) {
+  const selected = resolveSelectedRooms(selection)
+  const passengerCount = getTripPassengerCount()
+  const totalCapacity = getRoomCapacity(selected)
+  const nightlyTotal = getRoomNightlyTotal(selected)
+  const enoughCapacity = totalCapacity >= passengerCount
+  function changeRoom(room: Room, quantity: number) {
     try {
       const previous = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
         hotelId?: string
@@ -46,9 +51,18 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
     } catch {
       clearTransfer()
     }
-    setSelectedId(room.id)
+    const nextRooms = [
+      ...(selection?.rooms ?? []).filter((item) => item.roomId !== room.id),
+      ...(quantity > 0 ? [{ roomId: room.id, quantity }] : []),
+    ]
+    const next = nextRooms.length ? { hotelId, rooms: nextRooms } : null
+    setSelection(next)
     setContinued(false)
-    sessionStorage.setItem('selected-room', JSON.stringify({ hotelId, roomId: room.id }))
+    if (next) sessionStorage.setItem('selected-room', JSON.stringify(next))
+    else {
+      sessionStorage.removeItem('selected-room')
+      if (clearTransfer()) sessionStorage.setItem('transfer-removed-notice', '1')
+    }
   }
   const optionClass = (active: boolean) =>
     `min-h-10 rounded-xl border px-4 text-sm font-semibold ${active ? 'border-[#d6b500] bg-[#fff7cc]' : 'border-[#cfd3d8] bg-white hover:bg-[#f7f8f9]'}`
@@ -117,8 +131,10 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
                       key={room.id}
                       room={room}
                       nights={nights}
-                      selected={selectedId === room.id}
-                      onSelect={selectRoom}
+                      quantity={
+                        selection?.rooms.find((item) => item.roomId === room.id)?.quantity ?? 0
+                      }
+                      onChange={changeRoom}
                     />
                   ))}
                 </div>
@@ -141,25 +157,37 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
             </div>
             <aside
               aria-label="Выбранный номер"
-              className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:rounded-2xl lg:border lg:shadow-sm"
+              className="fixed inset-x-0 bottom-0 z-20 max-h-[55dvh] overflow-y-auto border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:max-h-none lg:rounded-2xl lg:border lg:shadow-sm"
             >
               <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
               <p className="hidden text-sm text-text-secondary lg:mt-3 lg:block">
-                {selected ? `${hotel.name} · ${selected.name}` : 'Номер не выбран'}
+                {selected.length ? hotel.name : 'Номер не выбран'}
               </p>
-              {selected && <HotelPriceRow nightlyPrice={selected.price} nights={nights} />}
-              <FlightPriceRow />
+              <details className="lg:hidden">
+                <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
+                {selected.length > 0 && <HotelRoomsPriceRow rooms={selected} nights={nights} />}
+                <FlightPriceRow />
+              </details>
+              <div className="hidden lg:block">
+                {selected.length > 0 && <HotelRoomsPriceRow rooms={selected} nights={nights} />}
+                <FlightPriceRow />
+              </div>
+              {selected.length > 0 && !enoughCapacity && (
+                <p role="alert" className="mt-3 text-sm text-red-700">
+                  Недостаточно мест: выбрано {totalCapacity} из {passengerCount}. Добавьте номера.
+                </p>
+              )}
               <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
                 <strong>Итого</strong>
                 <strong>
-                  {selected && !nights
+                  {selected.length > 0 && !nights
                     ? 'Укажите даты'
-                    : formatPrice(flightPrice + (selected?.price ?? 0) * (nights ?? 0))}
+                    : formatPrice(flightPrice + nightlyTotal * (nights ?? 0))}
                 </strong>
               </div>
               <button
                 type="button"
-                disabled={!selected || !nights}
+                disabled={!selected.length || !nights || !enoughCapacity}
                 onClick={() => (onContinue ? onContinue() : setContinued(true))}
                 className="mt-3 h-10 w-full rounded-xl bg-accent text-sm font-semibold disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary"
               >

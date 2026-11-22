@@ -15,6 +15,31 @@ describe('Страница страховки', () => {
     sessionStorage.clear()
     navigate.mockClear()
   })
+  it('показывает в поездке все выбранные номера с общей стоимостью', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ isOneWay: true, passengers: { adults: 2, children: 1, infants: 0 } }),
+    )
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({
+        hotelId: 'sea-galaxy',
+        rooms: [
+          { roomId: 'standard-single', quantity: 2 },
+          { roomId: 'standard-double', quantity: 1 },
+        ],
+      }),
+    )
+    sessionStorage.setItem(
+      'hotel-period',
+      JSON.stringify({ start: '2026-12-01', end: '2026-12-03' }),
+    )
+    render(<InsurancePage />)
+    const summary = screen.getByLabelText('Ваша поездка')
+    expect(summary).toHaveTextContent('Стандарт одноместный: 43 800 ₽ × 2 × 2 ноч. = 175 200 ₽')
+    expect(summary).toHaveTextContent('Стандарт двухместный: 52 800 ₽ × 1 × 2 ноч. = 105 600 ₽')
+    expect(summary).toHaveTextContent('280 800 ₽')
+  })
   it('переходит к трансферу после выбора страховки при выбранном отеле', () => {
     sessionStorage.setItem(
       'selected-room',
@@ -75,7 +100,9 @@ describe('Страница страховки', () => {
     )
     render(<InsurancePage />)
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('112 480 ₽')
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('43 800 ₽ за ночь × 2 ночи')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent(
+      '43 800 ₽ × 1 × 2 ноч. = 87 600 ₽',
+    )
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('2 взрослых')
     expect(screen.getByLabelText('Ваша поездка')).not.toHaveTextContent('Младенцы')
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('Отель')

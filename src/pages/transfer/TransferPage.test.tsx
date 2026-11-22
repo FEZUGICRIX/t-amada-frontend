@@ -14,6 +14,32 @@ function chooseTime(label: string, value: string) {
 describe('Экран трансфера', () => {
   beforeEach(() => sessionStorage.clear())
 
+  it('учитывает стоимость всех выбранных номеров', () => {
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ isOneWay: true, passengers: { adults: 2, children: 1, infants: 0 } }),
+    )
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({
+        hotelId: 'sea-galaxy',
+        rooms: [
+          { roomId: 'standard-single', quantity: 2 },
+          { roomId: 'standard-double', quantity: 1 },
+        ],
+      }),
+    )
+    sessionStorage.setItem(
+      'hotel-period',
+      JSON.stringify({ start: '2026-12-01', end: '2026-12-03' }),
+    )
+    render(<TransferPage />)
+    const summary = screen.getByLabelText('Ваша поездка')
+    expect(summary).toHaveTextContent('280 800 ₽')
+    expect(summary).toHaveTextContent('Стандарт одноместный: 43 800 ₽ × 2 × 2 ноч. = 175 200 ₽')
+    expect(summary).toHaveTextContent('Стандарт двухместный: 52 800 ₽ × 1 × 2 ноч. = 105 600 ₽')
+  })
+
   it('проверяет ввод времени и сохраняет корректное значение', () => {
     sessionStorage.setItem(
       'selected-room',
