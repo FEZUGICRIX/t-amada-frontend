@@ -20,7 +20,7 @@ describe('Период поездки', () => {
   beforeEach(() => {
     sessionStorage.clear()
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 9, 1))
+    vi.setSystemTime(new Date('2026-10-01T09:00:00Z'))
   })
   afterEach(() => vi.useRealTimers())
   it('позволяет выбрать даты и не допускает окончание раньше начала', () => {

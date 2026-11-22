@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getMoscowToday } from './moscowDate'
 
 const NAVIGATION_BUTTON_CLASS_NAME =
   'grid size-8 cursor-pointer place-items-center rounded-lg border-0 bg-transparent p-0 text-2xl leading-none text-text-primary enabled:hover:bg-[#f2f3f5] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-default disabled:text-[#c7cdd4]'
@@ -49,10 +50,6 @@ type DatePickerProps = {
   embedded?: boolean
 }
 
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
-}
-
 function isSameDay(firstDate: Date, secondDate: Date) {
   return (
     firstDate.getFullYear() === secondDate.getFullYear() &&
@@ -81,9 +78,22 @@ function DatePicker({
   minimumNights = 0,
   embedded = false,
 }: DatePickerProps) {
-  const today = startOfDay(new Date())
-  const initialDate =
+  const [today, setToday] = useState(getMoscowToday)
+  useEffect(() => {
+    const updateToday = () => {
+      const next = getMoscowToday()
+      setToday((current) => (isSameDay(current, next) ? current : next))
+    }
+    const timer = window.setInterval(updateToday, 1000)
+    document.addEventListener('visibilitychange', updateToday)
+    return () => {
+      window.clearInterval(timer)
+      document.removeEventListener('visibilitychange', updateToday)
+    }
+  }, [])
+  const selectedDate =
     selectionMode === 'return' && returnDate ? returnDate : (departureDate ?? today)
+  const initialDate = selectedDate < today ? today : selectedDate
 
   const [visibleDate, setVisibleDate] = useState(
     () => new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
@@ -230,6 +240,7 @@ function DatePicker({
               aria-pressed={isDeparture || isReturn}
               disabled={isDisabled}
               onClick={() => {
+                if (date.getTime() < getMoscowToday().getTime()) return
                 if (isOutsideMonth) {
                   setVisibleDate(new Date(date.getFullYear(), date.getMonth(), 1))
                 }

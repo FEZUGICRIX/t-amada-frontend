@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DatePicker from './DatePicker'
 
@@ -12,7 +12,7 @@ const defaultProps = {
 describe('DatePicker', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 10, 3))
+    vi.setSystemTime(new Date('2026-11-03T09:00:00Z'))
     defaultProps.onSelect.mockClear()
   })
 
@@ -73,6 +73,43 @@ describe('DatePicker', () => {
         name: '3 ноября 2026',
       }),
     ).not.toBeDisabled()
+  })
+
+  it('использует московскую дату до и после полуночи в Москве', () => {
+    vi.setSystemTime(new Date('2026-11-30T20:59:00Z'))
+    const { unmount } = render(<DatePicker {...defaultProps} />)
+    expect(screen.getByRole('button', { name: '30 ноября 2026' })).toHaveAttribute(
+      'aria-current',
+      'date',
+    )
+    expect(screen.getByRole('button', { name: '30 ноября 2026' })).toBeEnabled()
+    unmount()
+    vi.setSystemTime(new Date('2026-11-30T21:00:00Z'))
+    render(<DatePicker {...defaultProps} />)
+    expect(screen.getByText('Декабрь')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '1 декабря 2026' })).toHaveAttribute(
+      'aria-current',
+      'date',
+    )
+    expect(screen.getByRole('button', { name: '30 ноября 2026' })).toBeDisabled()
+  })
+
+  it('открывает текущий месяц, если сохранённая дата уже прошла', () => {
+    vi.setSystemTime(new Date('2026-11-30T21:00:00Z'))
+    render(<DatePicker {...defaultProps} departureDate={new Date(2026, 9, 1)} />)
+    expect(screen.getByText('Декабрь')).toBeInTheDocument()
+  })
+
+  it('обновляет доступные даты, если календарь открыт в московскую полночь', () => {
+    vi.setSystemTime(new Date('2026-11-30T20:59:59Z'))
+    render(<DatePicker {...defaultProps} />)
+    expect(screen.getByRole('button', { name: '30 ноября 2026' })).toBeEnabled()
+    act(() => vi.advanceTimersByTime(1000))
+    expect(screen.getByRole('button', { name: '30 ноября 2026' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: '1 декабря 2026' })).toHaveAttribute(
+      'aria-current',
+      'date',
+    )
   })
 
   it('делает даты до вылета недоступными для возвращения', () => {

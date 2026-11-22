@@ -5,7 +5,7 @@ import TripSearchForm from './TripSearchForm'
 describe('TripSearchForm', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.setSystemTime(new Date(2026, 10, 3))
+    vi.setSystemTime(new Date('2026-11-03T09:00:00Z'))
   })
 
   afterEach(() => {
