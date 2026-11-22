@@ -18,7 +18,8 @@ export function getArrivalDate(
   if (!departureDate || !flight) return ''
   const date = new Date(`${departureDate}T00:00:00Z`)
   if (Number.isNaN(date.getTime())) return ''
-  if (flight.arrival.time < flight.departure.time) date.setUTCDate(date.getUTCDate() + 1)
+  const offset = flight.arrivalDayOffset ?? (flight.arrival.time < flight.departure.time ? 1 : 0)
+  date.setUTCDate(date.getUTCDate() + offset)
   return date.toISOString().slice(0, 10)
 }
 

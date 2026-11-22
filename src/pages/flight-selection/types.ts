@@ -7,6 +7,9 @@ export type FlightPoint = {
 export type FlightStop = {
   airport: string
   duration: string
+  city?: string
+  waitMinutes?: number
+  utcOffsetMinutes?: number
 }
 
 export type Flight = {
@@ -17,6 +20,9 @@ export type Flight = {
   arrival: FlightPoint
   duration: string
   stops: FlightStop[]
+  segmentMinutes?: number[]
+  departureUtcOffsetMinutes?: number
+  arrivalDayOffset?: number
   baggage: string
   travelClass: 'economy' | 'business'
   price: number
