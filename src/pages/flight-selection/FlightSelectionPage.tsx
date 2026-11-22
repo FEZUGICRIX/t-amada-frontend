@@ -340,6 +340,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
                 onSelect={selectFlight}
                 groupPrice={!!search}
                 payingPassengers={payingPassengers}
+                date={isOutbound ? search?.departureDate : search?.returnDate}
               />
             ) : (
               <div className="rounded-2xl border border-[#e1e4e8] bg-white px-5 py-12 text-center">

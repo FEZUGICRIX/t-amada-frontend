@@ -102,7 +102,7 @@ describe('FlightSelectionPage', () => {
   it('отображает доступные рейсы', () => {
     render(<FlightSelectionPage />)
 
-    expect(screen.getByText('6 рейсов')).toBeInTheDocument()
+    expect(screen.getByText('8 рейсов')).toBeInTheDocument()
     expect(screen.getAllByRole('article')).toHaveLength(3)
 
     expect(screen.getByText('Аэрофлот')).toBeInTheDocument()
@@ -217,12 +217,12 @@ describe('FlightSelectionPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
     fireEvent.click(screen.getByRole('button', { name: 'С пересадкой' }))
     fireEvent.click(screen.getByRole('button', { name: 'Закрыть фильтры' }))
-    expect(screen.getByRole('heading', { name: '2 рейса' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '4 рейса' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /Фильтры и сортировка/ }))
     fireEvent.click(screen.getByRole('button', { name: 'Сбросить' }))
 
-    expect(screen.getByRole('heading', { name: '6 рейсов' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '8 рейсов' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'С пересадкой' })).toHaveAttribute(
       'aria-pressed',
       'false',
@@ -243,7 +243,7 @@ describe('FlightSelectionPage', () => {
     expect(screen.queryByRole('article')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Продолжить' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Сбросить фильтры' }))
-    expect(screen.getByRole('heading', { name: '6 рейсов' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '8 рейсов' })).toBeInTheDocument()
   })
 
   it('показывает выбранные рейсы туда и обратно в блоке поездки', () => {

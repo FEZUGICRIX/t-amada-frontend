@@ -41,6 +41,8 @@ describe('FlightList', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Показать ещё' }))
 
     expect(screen.getAllByRole('article')).toHaveLength(6)
+    fireEvent.click(screen.getByRole('button', { name: 'Показать ещё' }))
+    expect(screen.getAllByRole('article')).toHaveLength(outboundFlights.length)
     expect(screen.queryByRole('button', { name: 'Показать ещё' })).not.toBeInTheDocument()
   })
 
