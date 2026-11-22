@@ -6,19 +6,6 @@ export type InsuranceSearch = {
   passengers?: { adults: number; children: number; infants: number }
 } | null
 
-const russianCities = new Set([
-  'екатеринбург',
-  'москва',
-  'санкт-петербург',
-  'казань',
-  'нижний новгород',
-  'сочи',
-  'самара',
-  'уфа',
-  'пермь',
-  'челябинск',
-])
-
 import type { TripPeriod } from '@/shared/tripPeriodData'
 
 export function getInsuranceTripDetails(search: InsuranceSearch, period?: TripPeriod): string {
@@ -56,9 +43,5 @@ export function getInsuranceTripDetails(search: InsuranceSearch, period?: TripPe
     const formatter = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
     parts.push(`${formatter.format(start)} - ${formatter.format(end)}`)
   } else parts.push('Даты страховки не выбраны')
-  if (search?.destination?.trim()) {
-    const destination = search.destination.trim()
-    parts.push(russianCities.has(destination.toLocaleLowerCase('ru-RU')) ? 'Россия' : destination)
-  } else parts.push('Направление не выбрано')
   return parts.join(' · ')
 }
