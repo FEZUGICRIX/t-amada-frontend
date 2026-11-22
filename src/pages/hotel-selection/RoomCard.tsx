@@ -3,20 +3,22 @@ import type { Room } from './rooms'
 
 function RoomCard({
   room,
-  selected,
-  onSelect,
+  quantity,
+  onChange,
   nights,
 }: {
   room: Room
-  selected: boolean
-  onSelect: (room: Room) => void
+  quantity: number
+  onChange: (room: Room, quantity: number) => void
   nights?: number | null
 }) {
   return (
     <article
       aria-label={room.name}
-      onClick={() => onSelect(room)}
-      className={`flex min-w-0 cursor-pointer flex-col gap-4 rounded-xl border bg-white p-4 hover:shadow-sm sm:flex-row ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
+      onClick={() => {
+        if (!quantity) onChange(room, 1)
+      }}
+      className={`flex min-w-0 flex-col gap-4 rounded-xl border bg-white p-4 hover:shadow-sm sm:flex-row ${quantity ? 'border-2 border-text-primary' : 'cursor-pointer border-[#e1e4e8]'}`}
     >
       <img
         src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=480&q=75"
@@ -38,17 +40,44 @@ function RoomCard({
           total={nights && nights > 1 ? room.price * nights : null}
           totalLabel="за проживание"
         />
-        <button
-          type="button"
-          aria-pressed={selected}
-          onClick={(event) => {
-            event.stopPropagation()
-            onSelect(room)
-          }}
-          className={`h-9 rounded-xl px-4 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 ${selected ? 'bg-accent' : 'bg-[#e7e9ec] hover:bg-[#dfe2e6]'}`}
-        >
-          {selected ? 'Выбрано' : 'Выбрать'}
-        </button>
+        {quantity > 0 ? (
+          <div className="flex items-center gap-3" onClick={(event) => event.stopPropagation()}>
+            <button
+              type="button"
+              aria-label={`Уменьшить количество: ${room.name}`}
+              onClick={() => onChange(room, quantity - 1)}
+              className="grid size-9 cursor-pointer place-items-center rounded-xl bg-[#e7e9ec] text-lg font-semibold hover:bg-[#dfe2e6] focus-visible:outline-2"
+            >
+              −
+            </button>
+            <span
+              aria-label={`Количество: ${room.name}`}
+              className="min-w-5 text-center text-sm font-semibold"
+            >
+              {quantity}
+            </span>
+            <button
+              type="button"
+              aria-label={`Увеличить количество: ${room.name}`}
+              onClick={() => onChange(room, quantity + 1)}
+              className="grid size-9 cursor-pointer place-items-center rounded-xl bg-accent text-lg font-semibold hover:brightness-95 focus-visible:outline-2"
+            >
+              +
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-pressed={false}
+            onClick={(event) => {
+              event.stopPropagation()
+              onChange(room, 1)
+            }}
+            className="h-9 cursor-pointer rounded-xl bg-[#e7e9ec] px-4 text-sm font-semibold hover:bg-[#dfe2e6] focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            Выбрать
+          </button>
+        )}
       </div>
     </article>
   )

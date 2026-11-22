@@ -3,7 +3,7 @@ import { useState } from 'react'
 import BookingSteps from '@/shared/BookingSteps'
 import {
   FlightPriceRow,
-  HotelPriceRow,
+  HotelRoomsPriceRow,
   InsurancePriceRow,
   TransferPriceRow,
 } from '@/shared/TripPriceRows'
@@ -83,7 +83,7 @@ function TransferPage() {
   const rows = (
     <>
       <FlightPriceRow />
-      {trip.room && <HotelPriceRow nightlyPrice={trip.room.price} nights={trip.nights} />}
+      {trip.rooms.length > 0 && <HotelRoomsPriceRow rooms={trip.rooms} nights={trip.nights} />}
       {trip.insurance && (
         <InsurancePriceRow price={trip.insurance.price} passengers={trip.passengers} />
       )}
@@ -397,7 +397,7 @@ function TransferPage() {
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
               <strong className="whitespace-nowrap">
-                {trip.room && !trip.nights
+                {trip.rooms.length > 0 && !trip.nights
                   ? 'Укажите даты'
                   : formatPrice(trip.total + (selected?.price ?? 0) * (roundTrip ? 2 : 1))}
               </strong>

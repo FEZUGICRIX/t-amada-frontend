@@ -1,5 +1,9 @@
 import { hotels } from '@/pages/hotel-selection/hotels'
-import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
+import {
+  getRoomNightlyTotal,
+  readRoomSelection,
+  resolveSelectedRooms,
+} from '@/pages/hotel-selection/roomSelection'
 import { getTripFlightDetails, getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { insurancePlans } from '@/pages/insurance/insurancePlans'
 import { getInsurancePassengerCount } from '@/pages/insurance/insurancePrice'
@@ -34,18 +38,14 @@ export function getDefaultReturnTime(departureTime: string | undefined) {
 
 export function readTransferTrip() {
   let search: InsuranceSearch
-  let selection: { hotelId?: string; roomId?: string } | null
   try {
     search = JSON.parse(sessionStorage.getItem('trip-search') || 'null')
-    selection = JSON.parse(sessionStorage.getItem('selected-room') || 'null')
   } catch {
     search = null
-    selection = null
   }
+  const selection = readRoomSelection()
   const hotel = hotels.find((item) => item.id === selection?.hotelId)
-  const room = hotel
-    ? getRoomsForHotel(hotel.price).find((item) => item.id === selection?.roomId)
-    : undefined
+  const rooms = resolveSelectedRooms(selection)
   const insurance = insurancePlans.find(
     (item) => item.id === sessionStorage.getItem('selected-insurance'),
   )
@@ -54,14 +54,14 @@ export function readTransferTrip() {
   return {
     search,
     hotel,
-    room,
+    rooms,
     insurance,
     ...getTripFlightDetails(),
     passengers,
     nights,
     total:
       getTripFlightPrice() +
-      (room?.price ?? 0) * (nights ?? 0) +
+      getRoomNightlyTotal(rooms) * (nights ?? 0) +
       (insurance?.price ?? 0) * passengers,
   }
 }

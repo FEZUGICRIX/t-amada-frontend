@@ -7,6 +7,12 @@ import HotelRoomsRoutePage from '@/pages/hotel-selection/HotelRoomsRoutePage'
 import InsurancePage from '@/pages/insurance/InsurancePage'
 import TransferPage from '@/pages/transfer/TransferPage'
 import { readTransferTrip } from '@/pages/transfer/transferTrip'
+import {
+  getRoomCapacity,
+  getTripPassengerCount,
+  readRoomSelection,
+  resolveSelectedRooms,
+} from '@/pages/hotel-selection/roomSelection'
 
 const rootRoute = createRootRoute({
   component: App,
@@ -39,6 +45,11 @@ const insuranceRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/insurance',
   component: InsurancePage,
+  beforeLoad: () => {
+    const selection = readRoomSelection()
+    if (selection && getRoomCapacity(resolveSelectedRooms(selection)) < getTripPassengerCount())
+      throw redirect({ to: '/hotels/$hotelId/rooms', params: { hotelId: selection.hotelId } })
+  },
 })
 const routeTree = rootRoute.addChildren([
   searchRoute,
@@ -52,7 +63,9 @@ const routeTree = rootRoute.addChildren([
     component: TransferPage,
     beforeLoad: () => {
       const trip = readTransferTrip()
-      if (!trip.hotel || !trip.room) throw redirect({ to: '/insurance' })
+      if (!trip.hotel || !trip.rooms.length) throw redirect({ to: '/insurance' })
+      if (getRoomCapacity(trip.rooms) < getTripPassengerCount())
+        throw redirect({ to: '/hotels/$hotelId/rooms', params: { hotelId: trip.hotel.id } })
     },
   }),
 ])

@@ -4,13 +4,17 @@ import BookingSteps from '@/shared/BookingSteps'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { hotels } from '@/pages/hotel-selection/hotels'
-import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
+import {
+  getRoomNightlyTotal,
+  readRoomSelection,
+  resolveSelectedRooms,
+} from '@/pages/hotel-selection/roomSelection'
 import { insurancePlans } from './insurancePlans'
 import InsuranceCard from './InsuranceCard'
 import TripPeriodPicker from '@/shared/TripPeriod'
 import { formatTripPeriod, readTripPeriod } from '@/shared/tripPeriodData'
 import { readHotelNights } from '@/shared/tripPeriodData'
-import { FlightPriceRow, HotelPriceRow, InsurancePriceRow } from '@/shared/TripPriceRows'
+import { FlightPriceRow, HotelRoomsPriceRow, InsurancePriceRow } from '@/shared/TripPriceRows'
 import { getInsurancePassengerCount } from './insurancePrice'
 
 function InsurancePage() {
@@ -39,17 +43,12 @@ function InsurancePage() {
   })
   const [trip] = useState(() => {
     try {
-      const selection = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
-        hotelId: string
-        roomId: string
-      } | null
+      const selection = readRoomSelection()
       const hotel = hotels.find((item) => item.id === selection?.hotelId)
-      const room = hotel
-        ? getRoomsForHotel(hotel.price).find((item) => item.id === selection?.roomId)
-        : undefined
-      return { hotel, room, flightPrice: getTripFlightPrice() }
+      const rooms = resolveSelectedRooms(selection)
+      return { hotel, rooms, flightPrice: getTripFlightPrice() }
     } catch {
-      return { hotel: undefined, room: undefined, flightPrice: 0 }
+      return { hotel: undefined, rooms: [], flightPrice: 0 }
     }
   })
   const [insurancePeriod, setInsurancePeriod] = useState(() =>
@@ -62,7 +61,7 @@ function InsurancePage() {
   const nights = readHotelNights()
   const total =
     trip.flightPrice +
-    (trip.room?.price ?? 0) * (nights ?? 0) +
+    getRoomNightlyTotal(trip.rooms) * (nights ?? 0) +
     (selected?.price ?? 0) * passengerCount
   function selectPlan(id: string) {
     setSelectedId(id)
@@ -70,7 +69,7 @@ function InsurancePage() {
     sessionStorage.setItem('selected-insurance', id)
   }
   function continueTrip() {
-    if (trip.hotel && trip.room) {
+    if (trip.hotel && trip.rooms.length) {
       void navigate({ to: '/transfer' })
       return
     }
@@ -83,7 +82,7 @@ function InsurancePage() {
   }
   return (
     <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
-      {trip.hotel && trip.room ? (
+      {trip.hotel && trip.rooms.length > 0 ? (
         <Link
           to="/hotels/$hotelId/rooms"
           params={{ hotelId: trip.hotel.id }}
@@ -159,15 +158,15 @@ function InsurancePage() {
           <details className="mb-3 lg:hidden">
             <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
             <FlightPriceRow />
-            {trip.room && <HotelPriceRow nightlyPrice={trip.room.price} nights={nights} />}
+            {trip.rooms.length > 0 && <HotelRoomsPriceRow rooms={trip.rooms} nights={nights} />}
             {selected && <InsurancePriceRow price={selected.price} passengers={passengerCount} />}
           </details>
           <div className="hidden lg:block">
             <FlightPriceRow />
           </div>
-          {trip.room && (
+          {trip.rooms.length > 0 && (
             <div className="hidden lg:block">
-              <HotelPriceRow nightlyPrice={trip.room.price} nights={nights} />
+              <HotelRoomsPriceRow rooms={trip.rooms} nights={nights} />
             </div>
           )}
           {selected && (
@@ -178,7 +177,9 @@ function InsurancePage() {
           <div className="flex items-center justify-between gap-4 lg:mt-3 lg:border-t lg:border-[#e1e4e8] lg:pt-3">
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
-              <strong>{trip.room && !nights ? 'Укажите даты' : formatPrice(total)}</strong>
+              <strong>
+                {trip.rooms.length > 0 && !nights ? 'Укажите даты' : formatPrice(total)}
+              </strong>
             </div>
             <button
               type="button"

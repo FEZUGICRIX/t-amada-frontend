@@ -1,6 +1,7 @@
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import { getTripFlightDetails, getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { formatFlightPassengers } from './flightPriceDescription'
+import type { SelectedRoom } from '@/pages/hotel-selection/roomSelection'
 
 function Row({
   label,
@@ -68,6 +69,26 @@ export function InsurancePriceRow({ price, passengers }: { price: number; passen
       label="Страховка"
       price={formatPrice(price * passengers)}
       details={`${formatPrice(price)} × ${passengers} ${new Intl.PluralRules('ru').select(passengers) === 'one' ? 'пассажир' : new Intl.PluralRules('ru').select(passengers) === 'few' ? 'пассажира' : 'пассажиров'}`}
+    />
+  )
+}
+
+export function HotelRoomsPriceRow({
+  rooms,
+  nights,
+}: {
+  rooms: SelectedRoom[]
+  nights: number | null
+}) {
+  const total = rooms.reduce((sum, { room, quantity }) => sum + room.price * quantity, 0)
+  return (
+    <Row
+      label="Отель"
+      price={nights ? formatPrice(total * nights) : 'Укажите даты'}
+      details={rooms.map(
+        ({ room, quantity }) =>
+          `${room.name}: ${formatPrice(room.price)} × ${quantity} × ${nights ?? 'укажите даты'}${nights ? ' ноч.' : ''} = ${nights ? formatPrice(room.price * quantity * nights) : 'укажите даты'}`,
+      )}
     />
   )
 }
