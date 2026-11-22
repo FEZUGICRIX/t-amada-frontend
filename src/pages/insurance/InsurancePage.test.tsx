@@ -146,7 +146,7 @@ describe('Страница страховки', () => {
     fireEvent.click(dialog.parentElement!)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
-  it('показывает пассажиров, даты выбранных рейсов и страну в описании', () => {
+  it('показывает пассажиров и даты выбранных рейсов без страны и города', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({
@@ -168,7 +168,9 @@ describe('Страница страховки', () => {
       }),
     )
     const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('Для 2 взрослых, 1 ребёнка · 12 октября - 18 октября · Россия')
+    expect(dialog).toHaveTextContent('Для 2 взрослых, 1 ребёнка · 12 октября - 18 октября')
+    expect(dialog).not.toHaveTextContent('Россия')
+    expect(dialog).not.toHaveTextContent('Сочи')
     expect(dialog).toHaveTextContent('Багаж до 40 000 ₽')
     expect(dialog).toHaveTextContent('Не покрываются хронические заболевания')
   })
