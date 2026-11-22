@@ -10,12 +10,20 @@ import {
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import TransferCard from './TransferCard'
 import { transferOptions } from './transferOptions'
-import { formatTransferDate, readTransferTrip } from './transferTrip'
+import {
+  formatTransferDate,
+  getArrivalDate,
+  getDefaultPickupTime,
+  getDefaultReturnTime,
+  readTransferTrip,
+} from './transferTrip'
 import TransferDateField from './TransferDateField'
+import TransferTimeField from './TransferTimeField'
 import { clearTransfer, readTransferSelection } from './transferSelection'
 
 function TransferPage() {
   const [trip] = useState(readTransferTrip)
+  const arrivalDate = getArrivalDate(trip.search?.departureDate, trip.outbound)
   const flightKey = JSON.stringify([
     trip.outbound?.id,
     trip.inbound?.id,
@@ -44,7 +52,13 @@ function TransferPage() {
         saved?.departureDate === trip.search?.departureDate &&
         saved?.flightReturnDate === trip.search?.returnDate
       )
-        return saved
+        return {
+          ...saved,
+          outboundDate: arrivalDate || saved.outboundDate,
+          outboundTime: saved.outboundTime || getDefaultPickupTime(trip.outbound?.arrival.time),
+          returnDate: trip.inbound ? (trip.search?.returnDate ?? '') : saved.returnDate,
+          returnTime: saved.returnTime || getDefaultReturnTime(trip.inbound?.departure.time),
+        }
     } catch {
       sessionStorage.removeItem('transfer-schedule')
     }
@@ -54,10 +68,10 @@ function TransferPage() {
       inboundFlight: trip.inbound?.id,
       departureDate: trip.search?.departureDate,
       flightReturnDate: trip.search?.returnDate,
-      outboundDate: trip.search?.departureDate ?? '',
-      outboundTime: '',
+      outboundDate: arrivalDate || trip.search?.departureDate || '',
+      outboundTime: getDefaultPickupTime(trip.outbound?.arrival.time),
       returnDate: trip.search?.isOneWay ? '' : (trip.search?.returnDate ?? ''),
-      returnTime: '',
+      returnTime: getDefaultReturnTime(trip.inbound?.departure.time),
     }
   })
   const [draft, setDraft] = useState(schedule)
@@ -107,7 +121,7 @@ function TransferPage() {
       <div
         role="group"
         aria-label="Направления трансфера"
-        className="mt-6 inline-grid max-w-full grid-cols-2 gap-1 rounded-xl bg-[#e7e9ec] p-1"
+        className="mt-6 flex w-fit max-w-full flex-wrap items-stretch gap-x-5"
       >
         {[
           { label: 'Только из аэропорта', value: false },
@@ -116,6 +130,7 @@ function TransferPage() {
           <button
             key={label}
             type="button"
+            aria-label={label}
             aria-pressed={roundTrip === value}
             onClick={() => {
               setRoundTrip(value)
@@ -131,9 +146,30 @@ function TransferPage() {
                 )
               setContinued(false)
             }}
-            className={`min-h-10 cursor-pointer rounded-lg px-3 py-2 text-xs leading-5 focus-visible:outline-2 focus-visible:outline-offset-2 md:text-sm ${roundTrip === value ? 'bg-white font-semibold shadow-sm' : 'hover:bg-white/50'}`}
+            className={`relative inline-flex min-h-12 cursor-pointer items-center gap-2.5 border-b border-[#e1e4e8] px-1 py-3 text-left text-sm leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary ${roundTrip === value ? 'font-semibold text-text-primary after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:rounded-full after:bg-accent' : 'font-medium text-text-secondary hover:text-text-primary'}`}
           >
-            {label}
+            <svg
+              aria-hidden="true"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="shrink-0"
+            >
+              {value ? (
+                <>
+                  <path d="M4 8h15m-4-4 4 4-4 4" />
+                  <path d="M20 16H5m4-4-4 4 4 4" />
+                </>
+              ) : (
+                <path d="M4 12h15m-4-4 4 4-4 4" />
+              )}
+            </svg>
+            <span>{label}</span>
           </button>
         ))}
       </div>
@@ -143,8 +179,11 @@ function TransferPage() {
             aria-label="Маршрут трансфера"
             className="flex flex-col items-stretch justify-between gap-3 rounded-xl border border-[#cfd3d8] p-4 md:flex-row md:items-center"
           >
-            <div className="min-w-0 flex-1 space-y-2">
-              <div>
+            <div className="min-w-0 flex-1 space-y-3">
+              <div className="rounded-xl bg-[#f7f8f9] p-3">
+                <span className="mb-2 inline-block rounded-md bg-[#fff0a6] px-2 py-1 text-xs font-semibold">
+                  В отель
+                </span>
                 <h2 className="text-sm font-semibold [overflow-wrap:anywhere]">
                   {airport} → {hotel}
                 </h2>
@@ -153,13 +192,16 @@ function TransferPage() {
                     Адрес отеля: {trip.hotel.address}
                   </p>
                 )}
-                <p className="mt-1 text-xs leading-5 text-text-secondary">
+                <p className="mt-2 text-sm font-medium leading-5 text-text-primary">
                   Подача: {formatTransferDate(schedule.outboundDate)}
                   {schedule.outboundTime ? `, ${schedule.outboundTime}` : ', время не выбрано'}
                 </p>
               </div>
               {roundTrip && (
-                <div className="border-t border-[#e1e4e8] pt-2">
+                <div className="rounded-xl bg-[#f7f8f9] p-3">
+                  <span className="mb-2 inline-block rounded-md bg-[#fff0a6] px-2 py-1 text-xs font-semibold">
+                    В аэропорт
+                  </span>
                   <h2 className="text-sm font-semibold [overflow-wrap:anywhere]">
                     {hotel} →{' '}
                     {trip.inbound
@@ -171,7 +213,7 @@ function TransferPage() {
                       Адрес отеля: {trip.hotel.address}
                     </p>
                   )}
-                  <p className="mt-1 text-xs leading-5 text-text-secondary">
+                  <p className="mt-2 text-sm font-medium leading-5 text-text-primary">
                     Подача: {formatTransferDate(schedule.returnDate)}
                     {schedule.returnTime ? `, ${schedule.returnTime}` : ', время не выбрано'}
                   </p>
@@ -185,7 +227,7 @@ function TransferPage() {
                 setError('')
                 setEditing(true)
               }}
-              className="h-9 shrink-0 cursor-pointer self-end rounded-lg px-3 text-sm font-semibold hover:bg-[#f2f3f4] focus-visible:outline-2 md:self-center"
+              className="h-9 shrink-0 cursor-pointer self-end rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold hover:bg-[#f2f3f4] focus-visible:outline-2 md:self-center"
             >
               Изменить
             </button>
@@ -204,6 +246,14 @@ function TransferPage() {
                   setError('Укажите дату и время для каждого направления')
                   return
                 }
+                const validTime = /^([01]\d|2[0-3]):[0-5]\d$/
+                if (
+                  !validTime.test(draft.outboundTime) ||
+                  (roundTrip && !validTime.test(draft.returnTime))
+                ) {
+                  setError('Укажите корректное время в формате ЧЧ:ММ')
+                  return
+                }
                 if (
                   roundTrip &&
                   `${draft.returnDate}T${draft.returnTime}` <=
@@ -214,9 +264,9 @@ function TransferPage() {
                 }
                 if (
                   trip.outbound &&
-                  trip.search?.departureDate &&
+                  arrivalDate &&
                   `${draft.outboundDate}T${draft.outboundTime}` <
-                    `${trip.search.departureDate}T${trip.outbound.arrival.time}`
+                    `${arrivalDate}T${trip.outbound.arrival.time}`
                 ) {
                   setError('Трансфер в отель не может быть раньше прилёта')
                   return
@@ -239,36 +289,38 @@ function TransferPage() {
             >
               <h2 className="font-semibold">Дата и время подачи</h2>
               <div className="grid gap-3 sm:grid-cols-2">
-                <TransferDateField
-                  label="Дата поездки в отель"
-                  value={draft.outboundDate}
-                  onChange={(value) => setDraft({ ...draft, outboundDate: value })}
+                <div className="text-sm">
+                  Дата поездки в отель
+                  <div className="mt-1 flex min-h-11 items-center rounded-xl border border-[#e1e4e8] bg-[#f5f6f7] px-3 text-text-secondary">
+                    {formatTransferDate(draft.outboundDate)}
+                  </div>
+                </div>
+                <TransferTimeField
+                  label="Время поездки в отель"
+                  value={draft.outboundTime}
+                  onChange={(value) => setDraft({ ...draft, outboundTime: value })}
                 />
-                <label className="text-sm">
-                  Время поездки в отель
-                  <input
-                    type="time"
-                    value={draft.outboundTime}
-                    onChange={(e) => setDraft({ ...draft, outboundTime: e.target.value })}
-                    className="mt-1 block h-11 w-full rounded-xl border border-[#cfd3d8] px-3"
-                  />
-                </label>
                 {roundTrip && (
                   <>
-                    <TransferDateField
-                      label="Дата обратной поездки"
-                      value={draft.returnDate}
-                      onChange={(value) => setDraft({ ...draft, returnDate: value })}
-                    />
-                    <label className="text-sm">
-                      Время обратной поездки
-                      <input
-                        type="time"
-                        value={draft.returnTime}
-                        onChange={(e) => setDraft({ ...draft, returnTime: e.target.value })}
-                        className="mt-1 block h-11 w-full rounded-xl border border-[#cfd3d8] px-3"
+                    {trip.inbound ? (
+                      <div className="text-sm">
+                        Дата обратной поездки
+                        <div className="mt-1 flex min-h-11 items-center rounded-xl border border-[#e1e4e8] bg-[#f5f6f7] px-3 text-text-secondary">
+                          {formatTransferDate(draft.returnDate)}
+                        </div>
+                      </div>
+                    ) : (
+                      <TransferDateField
+                        label="Дата обратной поездки"
+                        value={draft.returnDate}
+                        onChange={(value) => setDraft({ ...draft, returnDate: value })}
                       />
-                    </label>
+                    )}
+                    <TransferTimeField
+                      label="Время обратной поездки"
+                      value={draft.returnTime}
+                      onChange={(value) => setDraft({ ...draft, returnTime: value })}
+                    />
                   </>
                 )}
               </div>

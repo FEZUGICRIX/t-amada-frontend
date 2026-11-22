@@ -7,8 +7,63 @@ vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 
+function chooseTime(label: string, value: string) {
+  fireEvent.change(screen.getByRole('textbox', { name: label }), { target: { value } })
+}
+
 describe('Экран трансфера', () => {
   beforeEach(() => sessionStorage.clear())
+
+  it('проверяет ввод времени и сохраняет корректное значение', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({ departureDate: '2027-12-01', isOneWay: true }),
+    )
+    render(<TransferPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
+    chooseTime('Время поездки в отель', '2460')
+    expect(screen.getByRole('textbox', { name: 'Время поездки в отель' })).toHaveValue('24:60')
+    fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
+    expect(screen.getByRole('alert')).toHaveTextContent('Укажите корректное время')
+    chooseTime('Время поездки в отель', '0835')
+    fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
+    expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('08:35')
+  })
+
+  it('устанавливает обратный трансфер на дату вылета за четыре часа и позволяет менять время', () => {
+    sessionStorage.setItem(
+      'selected-room',
+      JSON.stringify({ hotelId: 'sea-galaxy', roomId: 'standard-single' }),
+    )
+    sessionStorage.setItem(
+      'selected-flights',
+      JSON.stringify({ outbound: 'aeroflot-1', return: 'return-aeroflot-1' }),
+    )
+    sessionStorage.setItem(
+      'trip-search',
+      JSON.stringify({
+        departureDate: '2027-12-01',
+        returnDate: '2027-12-07',
+        passengers: { adults: 1, children: 0, infants: 0 },
+      }),
+    )
+    const { unmount } = render(<TransferPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Из аэропорта и обратно' }))
+    expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('Подача: 7 декабря, 05:15')
+    fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
+    expect(screen.queryByRole('button', { name: /Дата обратной поездки/ })).not.toBeInTheDocument()
+    chooseTime('Время обратной поездки', '06:00')
+    fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
+    expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('Подача: 7 декабря, 06:00')
+    unmount()
+    render(<TransferPage />)
+    fireEvent.click(screen.getByRole('button', { name: 'Из аэропорта и обратно' }))
+    expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('Подача: 7 декабря, 06:00')
+  })
 
   it('учитывает всех пассажиров и сохраняет выбор и направления', () => {
     sessionStorage.setItem(
@@ -81,14 +136,14 @@ describe('Экран трансфера', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
     fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
     expect(screen.getByRole('alert')).toHaveTextContent('Укажите дату и время')
-    fireEvent.change(screen.getByLabelText('Время поездки в отель'), { target: { value: '15:30' } })
+    chooseTime('Время поездки в отель', '15:30')
     fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
     expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('15:30')
     unmount()
     render(<TransferPage />)
     expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('15:30')
     fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
-    fireEvent.change(screen.getByLabelText('Время поездки в отель'), { target: { value: '16:30' } })
+    chooseTime('Время поездки в отель', '16:30')
     fireEvent.click(screen.getByRole('button', { name: 'Отмена' }))
     expect(screen.getByLabelText('Маршрут трансфера')).toHaveTextContent('15:30')
   })
@@ -112,10 +167,10 @@ describe('Экран трансфера', () => {
     )
     render(<TransferPage />)
     fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
-    fireEvent.change(screen.getByLabelText('Время поездки в отель'), { target: { value: '13:00' } })
+    chooseTime('Время поездки в отель', '13:00')
     fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
     expect(screen.getByRole('alert')).toHaveTextContent('не может быть раньше прилёта')
-    fireEvent.change(screen.getByLabelText('Время поездки в отель'), { target: { value: '15:00' } })
+    chooseTime('Время поездки в отель', '15:00')
     fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
     fireEvent.click(screen.getByRole('button', { name: 'Из аэропорта и обратно' }))
     fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
@@ -152,7 +207,13 @@ describe('Экран трансфера', () => {
     render(<TransferPage />)
     const route = screen.getByLabelText('Маршрут трансфера')
     expect(route).toHaveTextContent('Аэропорт Сочи, AER → Pullman Sochi Centre')
-    expect(route).toHaveTextContent('Подача: 1 декабря, время не выбрано')
+    expect(route).toHaveTextContent('Подача: 1 декабря, 16:05')
+    fireEvent.click(screen.getByRole('button', { name: 'Изменить' }))
+    expect(screen.getByRole('textbox', { name: 'Время поездки в отель' })).toHaveValue('16:05')
+    expect(screen.queryByRole('button', { name: /Дата поездки в отель/ })).not.toBeInTheDocument()
+    chooseTime('Время поездки в отель', '17:30')
+    fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
+    expect(route).toHaveTextContent('Подача: 1 декабря, 17:30')
     expect(route).not.toHaveTextContent('Обратный вылет')
     fireEvent.click(screen.getByRole('button', { name: 'Из аэропорта и обратно' }))
     expect(route).toHaveTextContent('Pullman Sochi Centre → Аэропорт Сочи, AER')

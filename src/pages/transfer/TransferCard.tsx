@@ -18,25 +18,44 @@ function TransferCard({
     <article
       aria-label={option.name}
       onClick={unavailable ? undefined : onSelect}
-      className={`grid grid-cols-[44px_minmax(0,1fr)] gap-3 rounded-xl border bg-white p-4 transition-shadow md:grid-cols-[44px_minmax(0,1fr)_auto] ${unavailable ? 'opacity-60' : 'cursor-pointer hover:shadow-sm'} ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
+      className={`flex min-w-0 flex-col gap-4 rounded-xl border bg-white p-4 transition-shadow sm:flex-row sm:items-stretch sm:gap-6 ${unavailable ? 'opacity-60' : 'cursor-pointer hover:shadow-sm'} ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
     >
-      <span
-        aria-hidden="true"
-        className="grid size-11 place-items-center rounded-lg bg-[#f2f3f4] font-semibold"
-      >
-        Т
-      </span>
-      <div className="min-w-0 self-center">
-        <h2 className="text-base font-semibold">{option.name}</h2>
-        <p className="mt-1 text-xs leading-5 text-text-secondary">
-          {option.vehicle} · до {option.capacity} пассажиров
-        </p>
-        <p className="text-xs leading-5 text-text-secondary">{option.description}</p>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h2 className="text-lg leading-6 font-semibold">{option.name}</h2>
+        </div>
+        <div className="mt-3 flex items-center gap-2 text-sm text-text-primary">
+          <svg
+            aria-hidden="true"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="9" cy="8" r="3" />
+            <path d="M3.5 19v-1.5a5.5 5.5 0 0 1 11 0V19M16 5.5a3 3 0 0 1 0 5.8m1.5 2.7a5 5 0 0 1 3 4.6V19" />
+          </svg>
+          <span>До {option.capacity} пассажиров</span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {option.features.map((feature) => (
+            <span
+              key={feature}
+              className="rounded-md bg-[#f2f3f4] px-2.5 py-1 text-xs leading-4 text-text-secondary"
+            >
+              {feature}
+            </span>
+          ))}
+        </div>
         {unavailable && (
           <p className="mt-1 text-xs text-text-secondary">Недостаточно мест для всех пассажиров</p>
         )}
       </div>
-      <div className="col-span-2 flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 md:col-span-1 md:flex-col md:items-end md:border-0 md:pt-0">
+      <div className="flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 sm:min-w-[180px] sm:flex-col sm:items-end sm:justify-between sm:border-0 sm:pt-0">
         <CardPrice
           price={option.price}
           unit="за поездку"
