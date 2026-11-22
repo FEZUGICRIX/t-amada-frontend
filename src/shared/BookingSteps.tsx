@@ -1,17 +1,50 @@
 import { Link } from '@tanstack/react-router'
-const steps = ['Авиабилет', 'Отель', 'Страховка', 'Трансфер']
+import { outboundFlights, returnFlights } from '@/pages/flight-selection/mockFlights'
+import { hotels } from '@/pages/hotel-selection/hotels'
+import { getRoomsForHotel } from '@/pages/hotel-selection/rooms'
 
-function BookingSteps({ current }: { current: number }) {
+const steps = ['Авиабилет', 'Отель', 'Страховка', 'Трансфер']
+const paths = ['/flights', '/hotels', '/insurance', '/transfer'] as const
+
+function BookingSteps({
+  current,
+  flightsComplete,
+}: {
+  current: number
+  flightsComplete?: boolean
+}) {
   let hasSelectedHotel = false
+  let hasFlights = false
   try {
     const selection = JSON.parse(sessionStorage.getItem('selected-room') || 'null') as {
       hotelId?: string
       roomId?: string
     } | null
-    hasSelectedHotel = Boolean(selection?.hotelId && selection.roomId)
+    const hotel = hotels.find((item) => item.id === selection?.hotelId)
+    hasSelectedHotel = Boolean(
+      hotel && getRoomsForHotel(hotel.price).some((room) => room.id === selection?.roomId),
+    )
+    const search = JSON.parse(sessionStorage.getItem('trip-search') || 'null') as {
+      isOneWay?: boolean
+      passengers?: { travelClass?: string }
+    } | null
+    const flights = JSON.parse(sessionStorage.getItem('selected-flights') || 'null') as {
+      outbound?: string
+      return?: string
+    } | null
+    const outbound = outboundFlights.find((flight) => flight.id === flights?.outbound)
+    const inbound = returnFlights.find((flight) => flight.id === flights?.return)
+    const travelClass = search?.passengers?.travelClass
+    hasFlights = Boolean(
+      outbound &&
+      (!travelClass || outbound.travelClass === travelClass) &&
+      (search?.isOneWay || (inbound && (!travelClass || inbound.travelClass === travelClass))),
+    )
   } catch {
     hasSelectedHotel = false
+    hasFlights = false
   }
+  if (flightsComplete !== undefined) hasFlights = flightsComplete
   return (
     <ol
       className="mt-4 flex list-none flex-wrap items-center gap-2 p-0"
@@ -24,30 +57,10 @@ function BookingSteps({ current }: { current: number }) {
             aria-current={index === current ? 'step' : undefined}
             className={`shrink-0 rounded-full text-[13px] leading-4 ${index === current ? 'bg-accent font-semibold text-text-primary shadow-[0_2px_8px_rgb(255_221_45_/_35%)]' : 'bg-white/80 text-text-secondary'}`}
           >
-            {index < current && index === 0 ? (
+            {index !== current &&
+            (index === 0 || (hasFlights && (index !== 3 || hasSelectedHotel))) ? (
               <Link
-                to="/flights"
-                className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
-              >
-                {index + 1}. {step}
-              </Link>
-            ) : index === 1 && current !== 1 && hasSelectedHotel ? (
-              <Link
-                to="/hotels"
-                className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
-              >
-                {index + 1}. {step}
-              </Link>
-            ) : index === 2 && current === 3 ? (
-              <Link
-                to="/insurance"
-                className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
-              >
-                {index + 1}. {step}
-              </Link>
-            ) : index === 3 && current === 2 && hasSelectedHotel ? (
-              <Link
-                to="/transfer"
+                to={paths[index]}
                 className="block rounded-full px-3 py-1.5 text-inherit no-underline hover:bg-white focus-visible:outline-2"
               >
                 {index + 1}. {step}

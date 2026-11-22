@@ -5,6 +5,32 @@ import { insurancePlans } from '@/pages/insurance/insurancePlans'
 import { getInsurancePassengerCount } from '@/pages/insurance/insurancePrice'
 import type { InsuranceSearch } from '@/pages/insurance/insuranceTrip'
 import { readHotelNights } from '@/shared/tripPeriodData'
+import type { Flight } from '@/pages/flight-selection/types'
+
+export function getArrivalDate(
+  departureDate: string | null | undefined,
+  flight: Flight | undefined,
+) {
+  if (!departureDate || !flight) return ''
+  const date = new Date(`${departureDate}T00:00:00Z`)
+  if (Number.isNaN(date.getTime())) return ''
+  if (flight.arrival.time < flight.departure.time) date.setUTCDate(date.getUTCDate() + 1)
+  return date.toISOString().slice(0, 10)
+}
+
+export function getDefaultPickupTime(arrivalTime: string | undefined) {
+  if (!arrivalTime || !/^([01]\d|2[0-3]):[0-5]\d$/.test(arrivalTime)) return ''
+  const [hours, minutes] = arrivalTime.split(':').map(Number)
+  if (hours >= 22) return ''
+  return `${String(hours + 2).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
+export function getDefaultReturnTime(departureTime: string | undefined) {
+  if (!departureTime || !/^([01]\d|2[0-3]):[0-5]\d$/.test(departureTime)) return ''
+  const [hours, minutes] = departureTime.split(':').map(Number)
+  if (hours < 4) return ''
+  return `${String(hours - 4).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
 
 export function readTransferTrip() {
   let search: InsuranceSearch

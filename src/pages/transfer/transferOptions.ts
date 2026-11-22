@@ -3,7 +3,7 @@ export type TransferOption = {
   name: string
   vehicle: string
   capacity: number
-  description: string
+  features: string[]
   price: number
 }
 
@@ -13,7 +13,7 @@ export const transferOptions: TransferOption[] = [
     name: 'Стандарт',
     vehicle: 'Седан',
     capacity: 3,
-    description: 'Комфортная поездка до отеля',
+    features: ['Кондиционер', 'Место для багажа'],
     price: 1200,
   },
   {
@@ -21,7 +21,7 @@ export const transferOptions: TransferOption[] = [
     name: 'Минивэн',
     vehicle: 'Минивэн',
     capacity: 6,
-    description: 'Увеличенный багажник',
+    features: ['Кондиционер', 'Увеличенный багажник', 'Для большой компании'],
     price: 1900,
   },
 ]

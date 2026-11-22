@@ -27,24 +27,32 @@ function InsuranceCard({
       <article
         aria-label={plan.name}
         onClick={onSelect}
-        className={`grid cursor-pointer grid-cols-[44px_minmax(0,1fr)] gap-3 rounded-xl border bg-white p-4 transition-shadow hover:shadow-sm md:grid-cols-[44px_minmax(0,1fr)_auto] ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
+        className={`flex min-w-0 cursor-pointer flex-col gap-4 rounded-xl border bg-white p-4 transition-shadow hover:shadow-sm sm:flex-row sm:items-stretch sm:gap-6 ${selected ? 'border-2 border-text-primary' : 'border-[#e1e4e8]'}`}
       >
-        <span
-          aria-hidden="true"
-          className="grid size-11 place-items-center rounded-lg bg-[#f2f3f4] font-semibold"
-        >
-          С
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold">{plan.name}</h2>
-          <p className="mt-1 text-xs text-text-secondary">
-            Медицинские расходы до {formatPrice(plan.medicalLimit)}
-          </p>
-          <div className="mt-2 flex flex-wrap gap-1">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg leading-6 font-semibold">{plan.name}</h2>
+          <div className="mt-3 flex items-center gap-2 text-sm text-text-primary">
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3 19 6v5c0 4.5-2.8 7.7-7 10-4.2-2.3-7-5.5-7-10V6l7-3Z" />
+              <path d="M12 8v6m-3-3h6" />
+            </svg>
+            <span>Медицинские расходы до {formatPrice(plan.medicalLimit)}</span>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
             {plan.coverage.map((item) => (
               <span
                 key={item}
-                className="rounded-md bg-[#f2f3f4] px-2 py-1 text-xs text-text-secondary"
+                className="rounded-md bg-[#f2f3f4] px-2.5 py-1 text-xs leading-4 text-text-secondary"
               >
                 {item}
               </span>
@@ -62,7 +70,7 @@ function InsuranceCard({
             Подробнее о покрытии
           </button>
         </div>
-        <div className="col-span-2 flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 md:col-span-1 md:flex-col md:items-end md:border-0 md:pt-0">
+        <div className="flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 sm:min-w-[180px] sm:flex-col sm:items-end sm:justify-between sm:border-0 sm:pt-0">
           <CardPrice
             price={plan.price}
             unit="за пассажира"

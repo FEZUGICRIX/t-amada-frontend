@@ -270,7 +270,12 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
                 : 'Сочи → Москва · 18 октября · 2 взрослых · эконом'}
           </p>
 
-          <BookingSteps current={0} />
+          <BookingSteps
+            current={0}
+            flightsComplete={Boolean(
+              selectedOutboundFlight && (search?.isOneWay || selectedReturnFlight),
+            )}
+          />
         </div>
       </header>
 
