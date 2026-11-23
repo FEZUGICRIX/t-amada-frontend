@@ -6,6 +6,7 @@ import HotelSelectionPage from '@/pages/hotel-selection/HotelSelectionPage'
 import HotelRoomsRoutePage from '@/pages/hotel-selection/HotelRoomsRoutePage'
 import InsurancePage from '@/pages/insurance/InsurancePage'
 import TransferPage from '@/pages/transfer/TransferPage'
+import PassengerDetailsPage from '@/pages/passenger-details/PassengerDetailsPage'
 import { readTransferTrip } from '@/pages/transfer/transferTrip'
 import {
   getRoomCapacity,
@@ -57,6 +58,11 @@ const routeTree = rootRoute.addChildren([
   hotelsRoute,
   hotelRoomsRoute,
   insuranceRoute,
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/passengers',
+    component: PassengerDetailsPage,
+  }),
   createRoute({
     getParentRoute: () => rootRoute,
     path: '/transfer',
