@@ -1,5 +1,4 @@
-import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import type { Flight } from '@/pages/flight-selection/types'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
@@ -22,6 +21,10 @@ import {
 } from '@/shared/TripPriceRows'
 
 const SERVICE_FEE = 667
+
+function saveDemoBooking(services: { id: string; name: string; price: number }[], total: number) {
+  sessionStorage.setItem('demo-booking', JSON.stringify({ services, total, startedAt: Date.now() }))
+}
 
 function FlightInfo({ flight, date }: { flight: Flight; date?: string | null }) {
   const arrivalDate = getArrivalDate(date, flight)
@@ -47,7 +50,7 @@ function FlightInfo({ flight, date }: { flight: Flight; date?: string | null }) 
 }
 
 function TripReviewPage() {
-  const [continued, setContinued] = useState(false)
+  const navigate = useNavigate()
   const trip = readTransferTrip()
   const flightKey = JSON.stringify([
     trip.outbound?.id,
@@ -97,6 +100,29 @@ function TripReviewPage() {
     SERVICE_FEE
   const hasIncompleteHotel = trip.rooms.length > 0 && !trip.nights
   const totalLabel = hasIncompleteHotel ? 'Укажите даты' : formatPrice(total)
+  function startBooking() {
+    if (!trip.outbound || hasIncompleteHotel) return
+    const services = [
+      { id: 'flight', name: 'Авиабилет', price: getTripFlightPrice() },
+      ...(trip.rooms.length
+        ? [
+            {
+              id: 'hotel',
+              name: 'Отель',
+              price: getRoomNightlyTotal(trip.rooms) * (trip.nights ?? 0),
+            },
+          ]
+        : []),
+      ...(trip.insurance
+        ? [{ id: 'insurance', name: 'Страховка', price: trip.insurance.price * trip.passengers }]
+        : []),
+      ...(option && transfer
+        ? [{ id: 'transfer', name: 'Трансфер', price: option.price * (transfer.roundTrip ? 2 : 1) }]
+        : []),
+    ]
+    saveDemoBooking(services, total)
+    void navigate({ to: '/booking' })
+  }
   const editClass =
     'shrink-0 text-sm font-semibold underline hover:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-2'
   const cardClass = 'rounded-2xl border border-[#e1e4e8] bg-white p-4 md:p-5'
@@ -238,31 +264,23 @@ function TripReviewPage() {
           </div>
           <button
             type="button"
-            onClick={() => setContinued(true)}
+            onClick={startBooking}
+            disabled={!trip.outbound || hasIncompleteHotel}
             className="mt-4 hidden min-h-11 w-full rounded-xl bg-accent px-6 text-sm font-semibold hover:brightness-95 md:block"
           >
             Продолжить
           </button>
-          {continued && (
-            <p role="status" className="mt-2 text-sm text-text-secondary max-md:hidden">
-              Следующий этап пока недоступен.
-            </p>
-          )}
         </aside>
       </div>
       <div className="fixed inset-x-0 bottom-0 z-20 flex items-center justify-between gap-4 border-t border-[#e1e4e8] bg-white p-4 shadow-lg md:hidden">
         <div>
           <p className="text-xs text-text-secondary">Итого</p>
           <p className="font-semibold">{totalLabel}</p>
-          {continued && (
-            <p role="status" className="text-xs text-text-secondary">
-              Следующий этап пока недоступен.
-            </p>
-          )}
         </div>
         <button
           type="button"
-          onClick={() => setContinued(true)}
+          onClick={startBooking}
+          disabled={!trip.outbound || hasIncompleteHotel}
           className="min-h-11 rounded-xl bg-accent px-5 text-sm font-semibold"
         >
           Продолжить

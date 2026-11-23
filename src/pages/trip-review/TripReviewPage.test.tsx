@@ -3,7 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import TripReviewPage from './TripReviewPage'
 
+const navigate = vi.hoisted(() => vi.fn())
 vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => navigate,
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 
@@ -47,7 +49,7 @@ describe('Проверка поездки', () => {
     expect(screen.getByRole('heading', { name: 'Страховка' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Трансфер' })).not.toBeInTheDocument()
     fireEvent.click(screen.getAllByRole('button', { name: 'Продолжить' })[0])
-    expect(screen.getAllByRole('status')[0]).toHaveTextContent('Следующий этап пока недоступен')
+    expect(navigate).toHaveBeenCalledWith({ to: '/booking' })
   })
   it('показывает выбранный трансфер в оба конца и пересчитывает стоимость', () => {
     sessionStorage.setItem(
