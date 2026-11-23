@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import {
   emptyPassenger,
@@ -33,6 +33,7 @@ function readPassengers(): PassengerCategory[] {
 }
 
 function PassengerDetailsPage() {
+  const navigate = useNavigate()
   const [categories] = useState(readPassengers)
   const [passengers, setPassengers] = useState<PassengerData[]>(() => {
     try {
@@ -72,7 +73,6 @@ function PassengerDetailsPage() {
     const trip = readTransferTrip()
     return Boolean(trip.hotel && trip.rooms.length)
   })
-  const [continued, setContinued] = useState(false)
   return (
     <section className="pt-6 pb-10 md:pt-8 lg:pt-10">
       <Link
@@ -109,7 +109,7 @@ function PassengerDetailsPage() {
             validateContact(buyer),
           ) as FieldErrors
           setErrors(nextErrors)
-          setContinued(Object.keys(nextErrors).length === 0)
+          if (Object.keys(nextErrors).length === 0) void navigate({ to: '/review' })
           const firstError = Object.keys(nextErrors)[0]
           if (firstError) document.getElementById(firstError)?.focus()
         }}
@@ -139,7 +139,6 @@ function PassengerDetailsPage() {
                   }
                   return updated
                 })
-                setContinued(false)
               }}
             />
           ))}
@@ -162,7 +161,6 @@ function PassengerDetailsPage() {
                   delete updated['buyer-phone']
                   return updated
                 })
-                setContinued(false)
               }}
               error={errors['buyer-phone']}
             />
@@ -180,7 +178,6 @@ function PassengerDetailsPage() {
                   delete updated['buyer-email']
                   return updated
                 })
-                setContinued(false)
               }}
               onBlur={() => setBuyer((current) => ({ ...current, email: current.email.trim() }))}
               placeholder="name@example.ru"
@@ -195,11 +192,6 @@ function PassengerDetailsPage() {
           >
             Перейти к проверке
           </button>
-          {continued && (
-            <p role="status" className="text-sm text-text-secondary">
-              Следующий этап пока недоступен.
-            </p>
-          )}
         </div>
       </form>
     </section>
