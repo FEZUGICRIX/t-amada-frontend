@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import BookingSteps from '@/shared/BookingSteps'
 import {
@@ -22,6 +22,7 @@ import TransferTimeField from './TransferTimeField'
 import { clearTransfer, readTransferSelection } from './transferSelection'
 
 function TransferPage() {
+  const navigate = useNavigate()
   const [trip] = useState(readTransferTrip)
   const arrivalDate = getArrivalDate(trip.search?.departureDate, trip.outbound)
   const flightKey = JSON.stringify([
@@ -38,7 +39,6 @@ function TransferPage() {
     initialSelection.selection?.optionId ?? null,
   )
   const [selectionNotice, setSelectionNotice] = useState(initialSelection.invalid)
-  const [continued, setContinued] = useState(false)
   const [editing, setEditing] = useState(false)
   const [error, setError] = useState('')
   const [schedule, setSchedule] = useState(() => {
@@ -108,7 +108,7 @@ function TransferPage() {
             onClick={() => {
               setSelectedId(null)
               clearTransfer()
-              setContinued(true)
+              void navigate({ to: '/passengers' })
             }}
             className="cursor-pointer text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
           >
@@ -144,7 +144,6 @@ function TransferPage() {
                     flightKey,
                   }),
                 )
-              setContinued(false)
             }}
             className={`relative inline-flex min-h-12 cursor-pointer items-center gap-2.5 border-b border-[#e1e4e8] px-1 py-3 text-left text-sm leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary ${roundTrip === value ? 'font-semibold text-text-primary after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:rounded-full after:bg-accent' : 'font-medium text-text-secondary hover:text-text-primary'}`}
           >
@@ -377,7 +376,6 @@ function TransferPage() {
                       }),
                     )
                   setSelectionNotice(false)
-                  setContinued(false)
                 }}
               />
             ))}
@@ -420,18 +418,13 @@ function TransferPage() {
                   setEditing(true)
                   return
                 }
-                setContinued(true)
+                void navigate({ to: '/passengers' })
               }}
               className="h-10 cursor-pointer rounded-xl bg-accent px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-[#e7e9ec] disabled:text-text-secondary lg:w-full"
             >
               Продолжить
             </button>
           </div>
-          {continued && (
-            <p role="status" className="mt-2 text-sm text-text-secondary">
-              Следующий этап пока недоступен.
-            </p>
-          )}
         </aside>
       </div>
     </section>

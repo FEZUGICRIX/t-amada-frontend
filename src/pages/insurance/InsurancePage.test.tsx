@@ -126,8 +126,7 @@ describe('Страница страховки', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Пропустить этап' }))
     expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('0 ₽')
     expect(sessionStorage.getItem('selected-insurance')).toBeNull()
-    expect(screen.getByRole('status')).toHaveTextContent('Следующий этап пока недоступен')
-    expect(navigate).not.toHaveBeenCalled()
+    expect(navigate).toHaveBeenCalledWith({ to: '/passengers' })
   })
   it('выбирает страховку нажатием на карточку', () => {
     render(<InsurancePage />)

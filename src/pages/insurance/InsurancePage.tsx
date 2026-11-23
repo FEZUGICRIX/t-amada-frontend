@@ -22,7 +22,6 @@ function InsurancePage() {
   const [selectedId, setSelectedId] = useState<string | null>(() =>
     sessionStorage.getItem('selected-insurance'),
   )
-  const [continued, setContinued] = useState(false)
   const [transferRemoved] = useState(() => {
     const notice = sessionStorage.getItem('transfer-removed-notice') === '1'
     sessionStorage.removeItem('transfer-removed-notice')
@@ -65,7 +64,6 @@ function InsurancePage() {
     (selected?.price ?? 0) * passengerCount
   function selectPlan(id: string) {
     setSelectedId(id)
-    setContinued(false)
     sessionStorage.setItem('selected-insurance', id)
   }
   function continueTrip() {
@@ -73,7 +71,7 @@ function InsurancePage() {
       void navigate({ to: '/transfer' })
       return
     }
-    setContinued(true)
+    void navigate({ to: '/passengers' })
   }
   function skipInsurance() {
     setSelectedId(null)
@@ -197,11 +195,6 @@ function InsurancePage() {
               Продолжить
             </button>
           </div>
-          {continued && (
-            <p role="status" className="mt-2 text-sm text-text-secondary">
-              Следующий этап пока недоступен.
-            </p>
-          )}
         </aside>
       </div>
     </section>
