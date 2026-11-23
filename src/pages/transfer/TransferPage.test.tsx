@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import TransferPage from './TransferPage'
 
+const { navigate } = vi.hoisted(() => ({ navigate: vi.fn() }))
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to }: { children: ReactNode; to: string }) => <a href={to}>{children}</a>,
+  useNavigate: () => navigate,
 }))
 
 function chooseTime(label: string, value: string) {
@@ -12,7 +14,10 @@ function chooseTime(label: string, value: string) {
 }
 
 describe('Экран трансфера', () => {
-  beforeEach(() => sessionStorage.clear())
+  beforeEach(() => {
+    sessionStorage.clear()
+    navigate.mockClear()
+  })
 
   it('учитывает стоимость всех выбранных номеров', () => {
     sessionStorage.setItem(

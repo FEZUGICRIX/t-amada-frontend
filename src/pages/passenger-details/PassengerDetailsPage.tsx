@@ -1,8 +1,17 @@
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  emptyPassenger,
+  validateContact,
+  validatePassenger,
+  type BuyerData,
+  type FieldErrors,
+  type PassengerData,
+} from './passengerValidation'
 import { readTransferTrip } from '@/pages/transfer/transferTrip'
 import PassengerCard, { type PassengerCategory } from './PassengerCard'
 import PassengerField from './PassengerField'
+import { formatPhone } from './passengerFormatting'
 
 function readPassengers(): PassengerCategory[] {
   try {
@@ -24,7 +33,41 @@ function readPassengers(): PassengerCategory[] {
 }
 
 function PassengerDetailsPage() {
-  const [passengers] = useState(readPassengers)
+  const [categories] = useState(readPassengers)
+  const [passengers, setPassengers] = useState<PassengerData[]>(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('passenger-details') || 'null') as {
+        passengers?: PassengerData[]
+      } | null
+      const counts: Record<string, number> = {}
+      return categories.map((category) => {
+        const index = counts[category] || 0
+        counts[category] = index + 1
+        return (
+          saved?.passengers?.filter((passenger) => passenger.category === category)[index] ??
+          emptyPassenger(category)
+        )
+      })
+    } catch {
+      return categories.map(emptyPassenger)
+    }
+  })
+  const [buyer, setBuyer] = useState<BuyerData>(() => {
+    try {
+      return (
+        JSON.parse(sessionStorage.getItem('passenger-details') || 'null')?.buyer ?? {
+          phone: '',
+          email: '',
+        }
+      )
+    } catch {
+      return { phone: '', email: '' }
+    }
+  })
+  const [errors, setErrors] = useState<FieldErrors>({})
+  useEffect(() => {
+    sessionStorage.setItem('passenger-details', JSON.stringify({ passengers, buyer }))
+  }, [passengers, buyer])
   const [hasHotel] = useState(() => {
     const trip = readTransferTrip()
     return Boolean(trip.hotel && trip.rooms.length)
@@ -51,12 +94,54 @@ function PassengerDetailsPage() {
         className="mt-5"
         onSubmit={(event) => {
           event.preventDefault()
-          setContinued(true)
+          let departureDate: string | null = null
+          try {
+            departureDate =
+              JSON.parse(sessionStorage.getItem('trip-search') || 'null')?.departureDate ?? null
+          } catch {
+            departureDate = null
+          }
+          const nextErrors = Object.assign(
+            {},
+            ...passengers.map((passenger, index) =>
+              validatePassenger(passenger, index + 1, departureDate),
+            ),
+            validateContact(buyer),
+          ) as FieldErrors
+          setErrors(nextErrors)
+          setContinued(Object.keys(nextErrors).length === 0)
+          const firstError = Object.keys(nextErrors)[0]
+          if (firstError) document.getElementById(firstError)?.focus()
         }}
       >
         <div className="grid gap-3 lg:grid-cols-2">
-          {passengers.map((category, index) => (
-            <PassengerCard key={index} index={index + 1} category={category} />
+          {passengers.map((passenger, index) => (
+            <PassengerCard
+              key={index}
+              index={index + 1}
+              passenger={passenger}
+              errors={errors}
+              onChange={(value) => {
+                setPassengers((current) => current.map((item, i) => (i === index ? value : item)))
+                setErrors((current) => {
+                  const updated = { ...current }
+                  const fields = {
+                    surname: 'surname',
+                    name: 'name',
+                    birthDate: 'birth-date',
+                    document: 'document',
+                    documentNumber: 'document-number',
+                    citizenship: 'citizenship',
+                  } as const
+                  for (const key of Object.keys(fields) as (keyof typeof fields)[]) {
+                    if (value[key] !== passenger[key])
+                      delete updated[`passenger-${index + 1}-${fields[key]}`]
+                  }
+                  return updated
+                })
+                setContinued(false)
+              }}
+            />
           ))}
         </div>
         <fieldset className="mt-4 min-w-0 rounded-2xl border border-[#e1e4e8] bg-white p-4 md:p-5">
@@ -69,6 +154,17 @@ function PassengerDetailsPage() {
               label="Телефон"
               type="tel"
               autoComplete="tel"
+              value={buyer.phone}
+              onChange={(event) => {
+                setBuyer({ ...buyer, phone: formatPhone(event.target.value) })
+                setErrors((current) => {
+                  const updated = { ...current }
+                  delete updated['buyer-phone']
+                  return updated
+                })
+                setContinued(false)
+              }}
+              error={errors['buyer-phone']}
             />
             <PassengerField
               id="buyer-email"
@@ -76,6 +172,19 @@ function PassengerDetailsPage() {
               label="Электронная почта"
               type="email"
               autoComplete="email"
+              value={buyer.email}
+              onChange={(event) => {
+                setBuyer({ ...buyer, email: event.target.value })
+                setErrors((current) => {
+                  const updated = { ...current }
+                  delete updated['buyer-email']
+                  return updated
+                })
+                setContinued(false)
+              }}
+              onBlur={() => setBuyer((current) => ({ ...current, email: current.email.trim() }))}
+              placeholder="name@example.ru"
+              error={errors['buyer-email']}
             />
           </div>
         </fieldset>
