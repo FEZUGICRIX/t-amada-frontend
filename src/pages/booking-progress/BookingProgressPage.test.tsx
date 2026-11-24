@@ -42,4 +42,24 @@ describe('Процесс бронирования', () => {
     expect(screen.getByText('Заказ не найден')).toBeInTheDocument()
     expect(screen.getByText('К проверке поездки')).toBeInTheDocument()
   })
+  it('переходит к отмене при отказе выбранной услуги', () => {
+    navigate.mockClear()
+    sessionStorage.setItem(
+      'demo-booking',
+      JSON.stringify({
+        total: 4000,
+        startedAt: Date.now(),
+        failedServiceId: 'hotel',
+        services: [
+          { id: 'flight', name: 'Авиабилет', price: 2000 },
+          { id: 'hotel', name: 'Отель', price: 2000 },
+          { id: 'insurance', name: 'Страховка', price: 500 },
+        ],
+      }),
+    )
+    render(<BookingProgressPage />)
+    act(() => vi.advanceTimersByTime(6000))
+    expect(navigate).toHaveBeenCalledWith({ to: '/booking/cancelled', replace: true })
+    expect(navigate).not.toHaveBeenCalledWith({ to: '/booking/success', replace: true })
+  })
 })
