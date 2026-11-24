@@ -4,7 +4,7 @@ import type { InsurancePlan } from './insurancePlans'
 import InsuranceDetailsDialog from './InsuranceDetailsDialog'
 import type { InsuranceSearch } from './insuranceTrip'
 import type { TripPeriod } from '@/shared/tripPeriodData'
-import { getInsurancePassengerCount } from './insurancePrice'
+import { getInsurancePrice } from './insurancePrice'
 import CardPrice from '@/shared/CardPrice'
 
 function InsuranceCard({
@@ -21,7 +21,7 @@ function InsuranceCard({
   period: TripPeriod
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false)
-  const passengers = getInsurancePassengerCount(search)
+  const totalPrice = getInsurancePrice(plan.price, period, search)
   return (
     <>
       <article
@@ -73,11 +73,14 @@ function InsuranceCard({
         <div className="flex items-center justify-between gap-3 border-t border-[#e1e4e8] pt-3 sm:min-w-[180px] sm:flex-col sm:items-end sm:justify-between sm:border-0 sm:pt-0">
           <CardPrice
             price={plan.price}
-            unit="за пассажира"
-            total={passengers > 1 ? plan.price * passengers : null}
+            unit="в день"
+            total={totalPrice}
             totalLabel="за всех"
             align="left"
           />
+          {totalPrice === null && (
+            <span className="text-xs text-text-secondary">Укажите даты страховки</span>
+          )}
           <button
             type="button"
             aria-pressed={selected}

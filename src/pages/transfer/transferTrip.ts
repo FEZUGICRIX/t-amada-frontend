@@ -6,9 +6,9 @@ import {
 } from '@/pages/hotel-selection/roomSelection'
 import { getTripFlightDetails, getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { insurancePlans } from '@/pages/insurance/insurancePlans'
-import { getInsurancePassengerCount } from '@/pages/insurance/insurancePrice'
+import { getInsurancePassengerCount, getInsurancePrice } from '@/pages/insurance/insurancePrice'
 import type { InsuranceSearch } from '@/pages/insurance/insuranceTrip'
-import { readHotelNights } from '@/shared/tripPeriodData'
+import { readHotelNights, readTripPeriod } from '@/shared/tripPeriodData'
 import type { Flight } from '@/pages/flight-selection/types'
 
 export function getArrivalDate(
@@ -52,6 +52,9 @@ export function readTransferTrip() {
   )
   const passengers = getInsurancePassengerCount(search)
   const nights = readHotelNights()
+  const insurancePrice = insurance
+    ? getInsurancePrice(insurance.price, readTripPeriod('insurance-period', search), search)
+    : null
   return {
     search,
     hotel,
@@ -60,10 +63,9 @@ export function readTransferTrip() {
     ...getTripFlightDetails(),
     passengers,
     nights,
+    insurancePrice,
     total:
-      getTripFlightPrice() +
-      getRoomNightlyTotal(rooms) * (nights ?? 0) +
-      (insurance?.price ?? 0) * passengers,
+      getTripFlightPrice() + getRoomNightlyTotal(rooms) * (nights ?? 0) + (insurancePrice ?? 0),
   }
 }
 

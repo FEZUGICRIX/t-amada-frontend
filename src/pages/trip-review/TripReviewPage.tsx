@@ -21,7 +21,7 @@ import {
   TransferPriceRow,
 } from '@/shared/TripPriceRows'
 
-const SERVICE_FEE = 667
+const getMockServiceFee = (subtotal: number) => Math.round(subtotal * 0.0067)
 
 function saveDemoBooking(
   services: { id: string; name: string; price: number }[],
@@ -100,13 +100,16 @@ function TripReviewPage() {
   const outboundTime = schedule?.outboundTime || getDefaultPickupTime(trip.outbound?.arrival.time)
   const returnDate = schedule?.returnDate || trip.search?.returnDate
   const returnTime = schedule?.returnTime || getDefaultReturnTime(trip.inbound?.departure.time)
-  const total =
+  const subtotal =
     getTripFlightPrice() +
     getRoomNightlyTotal(trip.rooms) * (trip.nights ?? 0) +
-    (trip.insurance?.price ?? 0) * trip.passengers +
-    (option?.price ?? 0) * (transfer?.roundTrip ? 2 : 1) +
-    SERVICE_FEE
-  const hasIncompleteHotel = trip.rooms.length > 0 && !trip.nights
+    (trip.insurancePrice ?? 0) +
+    (option?.price ?? 0) * (transfer?.roundTrip ? 2 : 1)
+  const serviceFee = getMockServiceFee(subtotal)
+  const total = subtotal + serviceFee
+  const hasIncompleteHotel =
+    (trip.rooms.length > 0 && !trip.nights) ||
+    Boolean(trip.insurance && trip.insurancePrice === null)
   const totalLabel = hasIncompleteHotel ? 'Укажите даты' : formatPrice(total)
   function startBooking() {
     if (!trip.outbound || hasIncompleteHotel) return
@@ -122,7 +125,7 @@ function TripReviewPage() {
           ]
         : []),
       ...(trip.insurance
-        ? [{ id: 'insurance', name: 'Страховка', price: trip.insurance.price * trip.passengers }]
+        ? [{ id: 'insurance', name: 'Страховка', price: trip.insurancePrice ?? 0 }]
         : []),
       ...(option && transfer
         ? [{ id: 'transfer', name: 'Трансфер', price: option.price * (transfer.roundTrip ? 2 : 1) }]
@@ -269,15 +272,13 @@ function TripReviewPage() {
           <h2 className="text-xl font-semibold">Ваша поездка</h2>
           {trip.outbound && <FlightPriceRow />}
           {trip.rooms.length > 0 && <HotelRoomsPriceRow rooms={trip.rooms} nights={trip.nights} />}
-          {trip.insurance && (
-            <InsurancePriceRow price={trip.insurance.price} passengers={trip.passengers} />
-          )}
+          {trip.insurance && <InsurancePriceRow total={trip.insurancePrice} />}
           {option && transfer && (
             <TransferPriceRow price={option.price} trips={transfer.roundTrip ? 2 : 1} />
           )}
           <div className="mt-4 flex justify-between gap-3 text-sm">
             <span>Сервисный сбор</span>
-            <strong>{formatPrice(SERVICE_FEE)}</strong>
+            <strong>{hasIncompleteHotel ? 'Укажите даты' : formatPrice(serviceFee)}</strong>
           </div>
           <div className="mt-4 flex justify-between border-t border-[#e1e4e8] pt-4 font-semibold">
             <span>Итого</span>

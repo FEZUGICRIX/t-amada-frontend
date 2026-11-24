@@ -63,14 +63,8 @@ export function HotelPriceRow({
     />
   )
 }
-export function InsurancePriceRow({ price, passengers }: { price: number; passengers: number }) {
-  return (
-    <Row
-      label="Страховка"
-      price={formatPrice(price * passengers)}
-      details={`${formatPrice(price)} × ${passengers} ${new Intl.PluralRules('ru').select(passengers) === 'one' ? 'пассажир' : new Intl.PluralRules('ru').select(passengers) === 'few' ? 'пассажира' : 'пассажиров'}`}
-    />
-  )
+export function InsurancePriceRow({ total }: { total: number | null }) {
+  return <Row label="Страховка" price={total === null ? 'Укажите даты' : formatPrice(total)} />
 }
 
 export function HotelRoomsPriceRow({

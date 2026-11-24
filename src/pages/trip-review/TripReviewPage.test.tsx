@@ -32,7 +32,8 @@ describe('Проверка поездки', () => {
     expect(screen.queryByRole('heading', { name: 'Отель' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Страховка' })).not.toBeInTheDocument()
     expect(screen.getByText('Сервисный сбор')).toBeInTheDocument()
-    expect(screen.getAllByText('25 547 ₽').length).toBeGreaterThan(0)
+    expect(screen.getByText('167 ₽')).toBeInTheDocument()
+    expect(screen.getAllByText('25 047 ₽').length).toBeGreaterThan(0)
   })
   it('показывает выбранный отель с количеством номеров и страховку', () => {
     sessionStorage.setItem(
@@ -146,6 +147,6 @@ describe('Проверка поездки', () => {
     render(<TripReviewPage />)
     expect(screen.queryByRole('heading', { name: 'Отель' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Страховка' })).not.toBeInTheDocument()
-    expect(screen.getAllByText('25 547 ₽').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('25 047 ₽').length).toBeGreaterThan(0)
   })
 })

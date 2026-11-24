@@ -112,10 +112,10 @@ describe('Страница страховки', () => {
     const { unmount } = render(<InsurancePage />)
     const basic = screen.getByRole('article', { name: 'Базовая защита' })
     fireEvent.click(within(basic).getByRole('button', { name: 'Выбрать' }))
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('1 490 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('Укажите даты')
     const extended = screen.getByRole('article', { name: 'Расширенная защита' })
     fireEvent.click(within(extended).getByRole('button', { name: 'Выбрать' }))
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('2 990 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('Укажите даты')
     unmount()
     render(<InsurancePage />)
     expect(
@@ -136,7 +136,7 @@ describe('Страница страховки', () => {
       'aria-pressed',
       'true',
     )
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('2 990 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('Укажите даты')
   })
   it('открывает описание без выбора и позволяет выбрать страховку в окне', () => {
     render(<InsurancePage />)
@@ -149,8 +149,8 @@ describe('Страница страховки', () => {
       'aria-pressed',
       'false',
     )
-    expect(dialog).toHaveTextContent('3 000 000 ₽')
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Выбрать за 1 490 ₽' }))
+    expect(dialog).toHaveTextContent('600 000 ₽')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Выбрать' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(within(card).getByRole('button', { name: 'Выбрано' })).toHaveAttribute(
       'aria-pressed',
@@ -197,8 +197,8 @@ describe('Страница страховки', () => {
     expect(dialog).toHaveTextContent('Для 2 взрослых, 1 ребёнка · 12 октября - 18 октября')
     expect(dialog).not.toHaveTextContent('Россия')
     expect(dialog).not.toHaveTextContent('Сочи')
-    expect(dialog).toHaveTextContent('Багаж до 40 000 ₽')
-    expect(dialog).toHaveTextContent('Не покрываются хронические заболевания')
+    expect(dialog).not.toHaveTextContent('Багаж')
+    expect(dialog).toHaveTextContent('Не покрываются расходы на лечение хронических заболеваний')
   })
   it('не выдаёт даты билета в одну сторону за период страховки', () => {
     sessionStorage.setItem(
@@ -256,24 +256,27 @@ describe('Страница страховки', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Выберите начало и окончание периода')
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
-  it('считает страховку на всех пассажиров, включая младенца', () => {
+  it('считает страховку с учётом скидки для детей и бесплатных младенцев', () => {
     sessionStorage.setItem(
       'trip-search',
       JSON.stringify({ isOneWay: true, passengers: { adults: 2, children: 1, infants: 1 } }),
     )
+    sessionStorage.setItem(
+      'insurance-period',
+      JSON.stringify({ start: '2026-11-22', end: '2026-11-27' }),
+    )
     const { unmount } = render(<InsurancePage />)
     const basic = screen.getByRole('article', { name: 'Базовая защита' })
-    expect(within(basic).getByText('1 490 ₽')).toBeInTheDocument()
-    expect(basic).toHaveTextContent('5 960 ₽ за всех')
+    expect(within(basic).getByText('75 ₽')).toBeInTheDocument()
+    expect(basic).toHaveTextContent('1 215 ₽ за всех')
     fireEvent.click(within(basic).getByRole('button', { name: 'Подробнее о покрытии' }))
     const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveTextContent('5 960 ₽')
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Выбрать за 5 960 ₽' }))
+    expect(dialog).toHaveTextContent('1 215 ₽')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Выбрать за 1 215 ₽' }))
     const summary = screen.getByLabelText('Ваша поездка')
-    expect(summary).toHaveTextContent('1 490 ₽ × 4 пассажира')
-    expect(summary).toHaveTextContent('5 960 ₽')
+    expect(summary).toHaveTextContent('1 215 ₽')
     unmount()
     render(<InsurancePage />)
-    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('5 960 ₽')
+    expect(screen.getByLabelText('Ваша поездка')).toHaveTextContent('1 215 ₽')
   })
 })
