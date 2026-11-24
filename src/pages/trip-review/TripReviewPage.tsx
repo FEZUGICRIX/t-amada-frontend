@@ -1,6 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import type { Flight } from '@/pages/flight-selection/types'
+import type { BookingTrip } from '@/pages/booking-progress/bookingData'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { getRoomNightlyTotal } from '@/pages/hotel-selection/roomSelection'
 import {
@@ -22,8 +23,15 @@ import {
 
 const SERVICE_FEE = 667
 
-function saveDemoBooking(services: { id: string; name: string; price: number }[], total: number) {
-  sessionStorage.setItem('demo-booking', JSON.stringify({ services, total, startedAt: Date.now() }))
+function saveDemoBooking(
+  services: { id: string; name: string; price: number }[],
+  total: number,
+  trip: BookingTrip,
+) {
+  sessionStorage.setItem(
+    'demo-booking',
+    JSON.stringify({ services, total, trip, startedAt: Date.now() }),
+  )
 }
 
 function FlightInfo({ flight, date }: { flight: Flight; date?: string | null }) {
@@ -120,7 +128,20 @@ function TripReviewPage() {
         ? [{ id: 'transfer', name: 'Трансфер', price: option.price * (transfer.roundTrip ? 2 : 1) }]
         : []),
     ]
-    saveDemoBooking(services, total)
+    saveDemoBooking(services, total, {
+      origin: trip.outbound.departure.city,
+      destination: trip.outbound.arrival.city,
+      departureDate: trip.search?.departureDate ?? null,
+      returnDate: trip.search?.isOneWay ? null : (trip.search?.returnDate ?? null),
+      passengers: trip.passengers,
+      passengerCounts: trip.passengerCounts ?? undefined,
+      outbound: trip.outbound,
+      inbound: trip.inbound,
+      hotelName: trip.hotel && trip.rooms.length ? trip.hotel.name : undefined,
+      insuranceName: trip.insurance?.name,
+      transferName: option?.name,
+      transferRoundTrip: transfer?.roundTrip,
+    })
     void navigate({ to: '/booking' })
   }
   const editClass =
