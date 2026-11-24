@@ -10,6 +10,7 @@ import PassengerDetailsPage from '@/pages/passenger-details/PassengerDetailsPage
 import TripReviewPage from '@/pages/trip-review/TripReviewPage'
 import BookingProgressPage from '@/pages/booking-progress/BookingProgressPage'
 import BookingSuccessPage from '@/pages/booking-success/BookingSuccessPage'
+import BookingCancelledPage from '@/pages/booking-cancelled/BookingCancelledPage'
 import { readTransferTrip } from '@/pages/transfer/transferTrip'
 import {
   getRoomCapacity,
@@ -62,6 +63,11 @@ const routeTree = rootRoute.addChildren([
   hotelRoomsRoute,
   insuranceRoute,
   createRoute({ getParentRoute: () => rootRoute, path: '/review', component: TripReviewPage }),
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/booking/cancelled',
+    component: BookingCancelledPage,
+  }),
   createRoute({
     getParentRoute: () => rootRoute,
     path: '/booking/success',

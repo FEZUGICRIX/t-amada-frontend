@@ -14,8 +14,15 @@ function BookingProgressPage() {
     const update = () => {
       const time = Date.now()
       setNow(time)
-      if (time >= booking.startedAt + booking.services.length * STEP_MS)
-        void navigate({ to: '/booking/success', replace: true })
+      const failedIndex = booking.services.findIndex(
+        (service) => service.id === booking.failedServiceId,
+      )
+      const endStep = failedIndex >= 0 ? failedIndex + 1 : booking.services.length
+      if (time >= booking.startedAt + endStep * STEP_MS)
+        void navigate({
+          to: failedIndex >= 0 ? '/booking/cancelled' : '/booking/success',
+          replace: true,
+        })
     }
     update()
     const timer = window.setInterval(update, 500)

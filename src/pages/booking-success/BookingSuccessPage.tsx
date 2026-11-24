@@ -24,6 +24,21 @@ function BookingSuccessPage() {
         </Link>
       </section>
     )
+  if (
+    booking.failedServiceId &&
+    booking.services.some((service) => service.id === booking.failedServiceId)
+  )
+    return (
+      <section className="py-10">
+        <h1 className="text-2xl font-semibold">Заказ не подтверждён</h1>
+        <Link
+          to="/booking/cancelled"
+          className="mt-4 inline-flex rounded-xl bg-accent px-5 py-3 font-semibold"
+        >
+          Посмотреть результат
+        </Link>
+      </section>
+    )
   if (openedAt < booking.startedAt + booking.services.length * STEP_MS)
     return (
       <section className="py-10">

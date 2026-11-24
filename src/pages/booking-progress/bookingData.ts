@@ -20,6 +20,8 @@ export type DemoBooking = {
   total: number
   startedAt: number
   trip?: BookingTrip
+  failedServiceId?: string
+  paymentStatus?: 'not_charged' | 'unknown'
 }
 
 export function readBooking(): DemoBooking | null {
