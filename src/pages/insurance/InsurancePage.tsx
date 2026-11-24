@@ -15,7 +15,7 @@ import TripPeriodPicker from '@/shared/TripPeriod'
 import { formatTripPeriod, readTripPeriod } from '@/shared/tripPeriodData'
 import { readHotelNights } from '@/shared/tripPeriodData'
 import { FlightPriceRow, HotelRoomsPriceRow, InsurancePriceRow } from '@/shared/TripPriceRows'
-import { getInsurancePassengerCount } from './insurancePrice'
+import { getInsurancePrice } from './insurancePrice'
 
 function InsurancePage() {
   const navigate = useNavigate()
@@ -56,12 +56,12 @@ function InsurancePage() {
   const [periodError, setPeriodError] = useState(0)
   const periodRef = useRef<HTMLDivElement>(null)
   const selected = insurancePlans.find((plan) => plan.id === selectedId)
-  const passengerCount = getInsurancePassengerCount(search)
+  const insurancePrice = selected
+    ? getInsurancePrice(selected.price, insurancePeriod, search)
+    : null
   const nights = readHotelNights()
   const total =
-    trip.flightPrice +
-    getRoomNightlyTotal(trip.rooms) * (nights ?? 0) +
-    (selected?.price ?? 0) * passengerCount
+    trip.flightPrice + getRoomNightlyTotal(trip.rooms) * (nights ?? 0) + (insurancePrice ?? 0)
   function selectPlan(id: string) {
     setSelectedId(id)
     sessionStorage.setItem('selected-insurance', id)
@@ -157,7 +157,7 @@ function InsurancePage() {
             <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
             <FlightPriceRow />
             {trip.rooms.length > 0 && <HotelRoomsPriceRow rooms={trip.rooms} nights={nights} />}
-            {selected && <InsurancePriceRow price={selected.price} passengers={passengerCount} />}
+            {selected && <InsurancePriceRow total={insurancePrice} />}
           </details>
           <div className="hidden lg:block">
             <FlightPriceRow />
@@ -169,14 +169,16 @@ function InsurancePage() {
           )}
           {selected && (
             <div className="hidden lg:block">
-              <InsurancePriceRow price={selected.price} passengers={passengerCount} />
+              <InsurancePriceRow total={insurancePrice} />
             </div>
           )}
           <div className="flex items-center justify-between gap-4 lg:mt-3 lg:border-t lg:border-[#e1e4e8] lg:pt-3">
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
               <strong>
-                {trip.rooms.length > 0 && !nights ? 'Укажите даты' : formatPrice(total)}
+                {(trip.rooms.length > 0 && !nights) || (selected && insurancePrice === null)
+                  ? 'Укажите даты'
+                  : formatPrice(total)}
               </strong>
             </div>
             <button

@@ -84,9 +84,7 @@ function TransferPage() {
     <>
       <FlightPriceRow />
       {trip.rooms.length > 0 && <HotelRoomsPriceRow rooms={trip.rooms} nights={trip.nights} />}
-      {trip.insurance && (
-        <InsurancePriceRow price={trip.insurance.price} passengers={trip.passengers} />
-      )}
+      {trip.insurance && <InsurancePriceRow total={trip.insurancePrice} />}
       {selected && <TransferPriceRow price={selected.price} trips={roundTrip ? 2 : 1} />}
     </>
   )
@@ -395,14 +393,15 @@ function TransferPage() {
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
               <strong className="whitespace-nowrap">
-                {trip.rooms.length > 0 && !trip.nights
+                {(trip.rooms.length > 0 && !trip.nights) ||
+                (trip.insurance && trip.insurancePrice === null)
                   ? 'Укажите даты'
                   : formatPrice(trip.total + (selected?.price ?? 0) * (roundTrip ? 2 : 1))}
               </strong>
             </div>
             <button
               type="button"
-              disabled={!selected}
+              disabled={!selected || Boolean(trip.insurance && trip.insurancePrice === null)}
               onClick={() => {
                 if (
                   !schedule.outboundDate ||

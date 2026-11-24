@@ -3,7 +3,7 @@ import formatPrice from '@/pages/flight-selection/formatPrice'
 import type { InsurancePlan } from './insurancePlans'
 import { getInsuranceTripDetails, type InsuranceSearch } from './insuranceTrip'
 import type { TripPeriod } from '@/shared/tripPeriodData'
-import { getInsurancePassengerCount } from './insurancePrice'
+import { getInsurancePrice } from './insurancePrice'
 
 function InsuranceDetailsDialog({
   plan,
@@ -23,7 +23,7 @@ function InsuranceDetailsDialog({
   const dialogRef = useRef<HTMLElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const closeRef = useRef(onClose)
-  const totalPrice = plan.price * getInsurancePassengerCount(search)
+  const totalPrice = getInsurancePrice(plan.price, period, search)
   useEffect(() => {
     closeRef.current = onClose
   }, [onClose])
@@ -87,7 +87,7 @@ function InsuranceDetailsDialog({
         <div className="mt-4 flex items-center justify-between gap-3 rounded-xl bg-[#f2f3f4] p-4">
           <span className="text-sm sm:text-base">Стоимость за всех</span>
           <strong className="whitespace-nowrap text-xl sm:text-2xl">
-            {formatPrice(totalPrice)}
+            {totalPrice === null ? 'Укажите даты' : formatPrice(totalPrice)}
           </strong>
         </div>
         <h3 className="mt-5 font-semibold">Что покрывает</h3>
@@ -118,7 +118,11 @@ function InsuranceDetailsDialog({
             }}
             className="min-h-11 rounded-xl bg-accent px-3 text-sm font-semibold hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2"
           >
-            {selected ? 'Выбрано' : `Выбрать за ${formatPrice(totalPrice)}`}
+            {selected
+              ? 'Выбрано'
+              : totalPrice === null
+                ? 'Выбрать'
+                : `Выбрать за ${formatPrice(totalPrice)}`}
           </button>
         </div>
       </section>
