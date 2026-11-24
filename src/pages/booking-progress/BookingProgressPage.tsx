@@ -1,31 +1,26 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 
-export type BookingService = { id: string; name: string; price: number }
-export type DemoBooking = { services: BookingService[]; total: number; startedAt: number }
-
-function readBooking(): DemoBooking | null {
-  try {
-    const booking = JSON.parse(
-      sessionStorage.getItem('demo-booking') || 'null',
-    ) as DemoBooking | null
-    return booking && Array.isArray(booking.services) && booking.services.length ? booking : null
-  } catch {
-    return null
-  }
-}
-
-const STEP_MS = 3000
+import { readBooking, STEP_MS } from './bookingData'
+import BookingTripDetails from './BookingTripDetails'
 
 function BookingProgressPage() {
+  const navigate = useNavigate()
   const [booking] = useState(readBooking)
   const [now, setNow] = useState(Date.now)
   useEffect(() => {
     if (!booking) return
-    const timer = window.setInterval(() => setNow(Date.now()), 500)
+    const update = () => {
+      const time = Date.now()
+      setNow(time)
+      if (time >= booking.startedAt + booking.services.length * STEP_MS)
+        void navigate({ to: '/booking/success', replace: true })
+    }
+    update()
+    const timer = window.setInterval(update, 500)
     return () => window.clearInterval(timer)
-  }, [booking])
+  }, [booking, navigate])
   if (!booking)
     return (
       <section className="py-10">
@@ -92,10 +87,11 @@ function BookingProgressPage() {
           return (
             <div
               key={service.id}
-              className="flex min-h-16 items-center justify-between gap-3 border-b border-[#e1e4e8] bg-white px-4 py-4 last:border-b-0 md:rounded-2xl md:border md:p-5"
+              className="flex min-h-16 items-start justify-between gap-3 border-b border-[#e1e4e8] bg-white px-4 py-4 last:border-b-0 md:rounded-2xl md:border md:p-5"
             >
-              <div>
+              <div className="min-w-0 flex-1">
                 <h2 className="font-semibold">{service.name}</h2>
+                <BookingTripDetails trip={booking.trip} service={service} />
                 <p className="mt-1 hidden text-sm text-text-secondary md:block">
                   {formatPrice(service.price)}
                 </p>

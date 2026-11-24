@@ -2,8 +2,9 @@ import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import BookingProgressPage from './BookingProgressPage'
+const navigate = vi.hoisted(() => vi.fn())
 vi.mock('@tanstack/react-router', () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigate,
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
 }))
 describe('Процесс бронирования', () => {
@@ -34,7 +35,7 @@ describe('Процесс бронирования', () => {
     expect(screen.getAllByText('Шаг 2 из 2').length).toBeGreaterThan(0)
     expect(screen.getByText('Подтверждён')).toBeInTheDocument()
     act(() => vi.advanceTimersByTime(3000))
-    expect(screen.getAllByText('Все услуги подтверждены').length).toBeGreaterThan(0)
+    expect(navigate).toHaveBeenCalledWith({ to: '/booking/success', replace: true })
   })
   it('предлагает вернуться к проверке при отсутствии заказа', () => {
     render(<BookingProgressPage />)
