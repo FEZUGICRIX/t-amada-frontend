@@ -59,7 +59,8 @@ function BookingProgressPage() {
         ? { text: 'Подтверждаем', style: 'bg-[#fff3cc] text-[#966000]' }
         : { text: 'Ожидает', style: 'bg-[#f0f1f3] text-text-primary' }
   return (
-    <section className="py-6 md:py-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-[200px] md:pt-10 md:pb-[240px]">
+      <BookingBackground />
       <header className="mt-5 flex items-start gap-4 border-b border-[#e1e4e8] pb-5 md:items-center">
         <div
           aria-hidden="true"
@@ -150,3 +151,4 @@ function BookingProgressPage() {
   )
 }
 export default BookingProgressPage
+import BookingBackground from '@/shared/BookingBackground'

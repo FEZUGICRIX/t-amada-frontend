@@ -1,4 +1,8 @@
+import { saveDraft } from '@/pages/my-trips/tripDraft'
+
 function AppHeader() {
+  const isSearchPage = window.location.pathname === '/'
+  const isTripsPage = window.location.pathname === '/trips'
   return (
     <header className="flex h-[62px] w-full items-center justify-between bg-background-primary px-4 md:h-[70px] md:px-9 lg:h-[76px] lg:px-[72px]">
       <a
@@ -23,8 +27,8 @@ function AppHeader() {
       >
         <a
           href="/"
-          className="inline-flex size-9 items-center justify-center gap-2 rounded-lg bg-accent text-sm leading-5 font-semibold text-text-primary no-underline shadow-[0_1px_3px_rgb(17_17_17_/_12%)] transition-[filter,transform] duration-150 hover:brightness-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px md:w-auto md:px-3.5"
-          aria-current="page"
+          className={`inline-flex size-9 items-center justify-center gap-2 rounded-lg text-sm leading-5 font-semibold text-text-primary no-underline transition-[background-color,filter,transform] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px md:w-auto md:px-3.5 ${isSearchPage || isTripsPage ? 'bg-white hover:bg-[#e9ebed]' : 'bg-accent shadow-[0_1px_3px_rgb(17_17_17_/_12%)] hover:brightness-[0.98]'}`}
+          aria-current={isSearchPage ? 'page' : undefined}
           aria-label="Собрать поездку"
         >
           <svg
@@ -42,8 +46,10 @@ function AppHeader() {
         </a>
         <a
           href="/trips"
+          onClick={() => saveDraft(window.location.pathname)}
           aria-label="Мои поездки"
-          className="inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm leading-5 font-medium text-text-secondary no-underline transition-[background-color,color,transform] duration-150 hover:bg-white hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px"
+          aria-current={isTripsPage ? 'page' : undefined}
+          className={`inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm leading-5 font-medium no-underline transition-[background-color,color,transform] duration-150 hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text-primary active:translate-y-px ${isTripsPage ? 'bg-accent text-text-primary' : 'text-text-secondary hover:bg-white'}`}
         >
           <svg
             className="size-4"

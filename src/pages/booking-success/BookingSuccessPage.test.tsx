@@ -46,8 +46,7 @@ describe('Успешное бронирование', () => {
     expect(screen.getAllByText(/2 человека/).length).toBeGreaterThan(0)
     expect(screen.getAllByText('Готово')).toHaveLength(2)
     expect(screen.getByRole('link', { name: 'На главную' })).toHaveAttribute('href', '/')
-    fireEvent.click(screen.getByRole('button', { name: 'Открыть поездку' }))
-    expect(screen.getByRole('status')).toHaveTextContent('Раздел поездки пока недоступен')
+    expect(screen.getByRole('link', { name: 'Открыть поездку' })).toHaveAttribute('href', '/trips')
   })
   it('показывает состав пассажиров, рейс с пересадкой и выбранные услуги из заказа', () => {
     sessionStorage.setItem(

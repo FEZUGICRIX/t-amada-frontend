@@ -37,3 +37,86 @@ select,
 textarea {
   font-family: inherit;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes page-appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes surface-appear {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes content-appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  main > section,
+  main > div {
+    animation: page-appear 240ms ease-out;
+  }
+
+  main article {
+    animation: surface-appear 280ms ease-out;
+  }
+
+  [role='dialog'],
+  dialog[open] {
+    animation: surface-appear 220ms ease-out;
+  }
+
+  details[open] > :not(summary) {
+    animation: content-appear 180ms ease-out;
+  }
+
+  button:not(:disabled),
+  a {
+    transition:
+      background-color 180ms ease,
+      color 180ms ease,
+      border-color 180ms ease,
+      box-shadow 180ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  main article[class*='cursor-pointer'] {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      border-color 180ms ease;
+  }
+
+  main article[class*='cursor-pointer']:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgb(17 17 17 / 8%);
+  }
+}

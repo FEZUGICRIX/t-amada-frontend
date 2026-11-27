@@ -31,28 +31,17 @@ function InsuranceCard({
       >
         <div className="min-w-0 flex-1">
           <h2 className="text-lg leading-6 font-semibold">{plan.name}</h2>
-          <div className="mt-3 flex items-center gap-2 text-sm text-text-primary">
-            <svg
-              aria-hidden="true"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3 19 6v5c0 4.5-2.8 7.7-7 10-4.2-2.3-7-5.5-7-10V6l7-3Z" />
-              <path d="M12 8v6m-3-3h6" />
-            </svg>
-            <span>Медицинские расходы до {formatPrice(plan.medicalLimit)}</span>
-          </div>
+          <p className="mt-3 text-sm text-text-secondary">
+            Медицинские расходы до{' '}
+            <strong className="font-semibold text-text-primary">
+              {formatPrice(plan.medicalLimit)}
+            </strong>
+          </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {plan.coverage.map((item) => (
               <span
                 key={item}
-                className="rounded-md bg-[#f2f3f4] px-2.5 py-1 text-xs leading-4 text-text-secondary"
+                className="rounded-md bg-[#fff7db] px-2.5 py-1 text-xs leading-4 text-[#695300]"
               >
                 {item}
               </span>

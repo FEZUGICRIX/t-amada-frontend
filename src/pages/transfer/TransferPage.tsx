@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import BookingSteps from '@/shared/BookingSteps'
 import {
   FlightPriceRow,
@@ -20,8 +20,21 @@ import {
 import TransferDateField from './TransferDateField'
 import TransferTimeField from './TransferTimeField'
 import { clearTransfer, readTransferSelection } from './transferSelection'
+import SkipStepButton from '@/shared/SkipStepButton'
 
 function TransferPage() {
+  const summaryRef = useRef<HTMLElement>(null)
+  const [summaryHeight, setSummaryHeight] = useState(0)
+  useEffect(() => {
+    const element = summaryRef.current
+    if (!element) return
+    const updateHeight = () => setSummaryHeight(element.getBoundingClientRect().height)
+    updateHeight()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(updateHeight)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   const navigate = useNavigate()
   const [trip] = useState(readTransferTrip)
   const arrivalDate = getArrivalDate(trip.search?.departureDate, trip.outbound)
@@ -89,7 +102,33 @@ function TransferPage() {
     </>
   )
   return (
-    <section className="pt-6 pb-40 md:pt-8 md:pb-10 lg:pt-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-4 md:pt-8 lg:pt-10 lg:pb-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 overflow-hidden"
+      >
+        <svg
+          className="absolute bottom-0 left-0 h-[min(42vh,380px)] w-full"
+          viewBox="0 0 1440 380"
+          preserveAspectRatio="xMidYMax slice"
+          fill="none"
+        >
+          <circle cx="1180" cy="82" r="42" fill="#f7df8b" />
+          <path
+            d="M0 225 180 120 315 210 480 105 655 238 835 132 1005 230 1170 120 1440 240V380H0Z"
+            fill="#f3ecd9"
+          />
+          <path d="M0 282C190 223 329 239 492 281s331 39 488-2 301-51 460 2v99H0Z" fill="#dfe9e2" />
+          <path d="M-120 380C205 301 485 320 708 380h250c-318-88-616-111-1003-38Z" fill="#cad8d3" />
+          <path
+            d="M32 362c215-47 415-45 592 0"
+            stroke="#fffdf5"
+            strokeWidth="3"
+            strokeDasharray="20 16"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
       <Link
         to="/insurance"
         className="mb-4 inline-flex h-10 items-center rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold text-text-primary no-underline hover:bg-[#f5f6f7]"
@@ -101,17 +140,13 @@ function TransferPage() {
           <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
             Выберите трансфер
           </h1>
-          <button
-            type="button"
+          <SkipStepButton
             onClick={() => {
               setSelectedId(null)
               clearTransfer()
               void navigate({ to: '/passengers' })
             }}
-            className="cursor-pointer text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            Пропустить этап
-          </button>
+          />
         </div>
         <p className="mt-2 text-sm text-text-secondary">Из аэропорта до отеля и обратно</p>
         <BookingSteps current={3} />
@@ -380,16 +415,17 @@ function TransferPage() {
           </div>
         </div>
         <aside
+          ref={summaryRef}
           aria-label="Ваша поездка"
-          className="fixed inset-x-0 bottom-0 z-20 max-h-[50dvh] overflow-y-auto border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] md:static md:max-h-none md:rounded-2xl md:border md:shadow-sm"
+          className="fixed inset-x-0 bottom-0 z-20 max-h-[50dvh] overflow-y-auto border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:max-h-none lg:rounded-2xl lg:border lg:shadow-sm"
         >
-          <h2 className="hidden text-xl font-semibold md:block">Ваша поездка</h2>
-          <details className="mb-3 md:hidden">
+          <h2 className="hidden text-xl font-semibold lg:block">Ваша поездка</h2>
+          <details className="mb-3 lg:hidden">
             <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
             {rows}
           </details>
-          <div className="hidden md:block">{rows}</div>
-          <div className="flex items-center justify-between gap-4 md:mt-4 md:border-t md:border-[#e1e4e8] md:pt-3 lg:flex-wrap">
+          <div className="hidden lg:block">{rows}</div>
+          <div className="flex items-center justify-between gap-4 lg:mt-4 lg:flex-wrap lg:border-t lg:border-[#e1e4e8] lg:pt-3">
             <div>
               <span className="block text-xs text-text-secondary">Итого</span>
               <strong className="whitespace-nowrap">
@@ -426,6 +462,7 @@ function TransferPage() {
           </div>
         </aside>
       </div>
+      <div aria-hidden="true" className="lg:hidden" style={{ height: summaryHeight }} />
     </section>
   )
 }

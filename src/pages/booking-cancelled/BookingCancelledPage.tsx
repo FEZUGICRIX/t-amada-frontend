@@ -57,7 +57,8 @@ function BookingCancelledPage() {
   const time = (value: number) =>
     new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(new Date(value))
   return (
-    <section className="py-6 sm:py-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-[200px] sm:pt-10 md:pb-[240px]">
+      <BookingBackground />
       <header className="flex items-start gap-4 border-b border-[#e1e4e8] pb-6 sm:items-center">
         <div
           aria-hidden="true"
@@ -150,3 +151,4 @@ function BookingCancelledPage() {
   )
 }
 export default BookingCancelledPage
+import BookingBackground from '@/shared/BookingBackground'

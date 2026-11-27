@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import FlightFiltersPanel from './FlightFiltersPanel'
 import FlightList from './FlightList'
 import { DEFAULT_FLIGHT_FILTERS, filterAndSortFlights, type FlightFilters } from './flightFilters'
@@ -120,6 +120,19 @@ function getActiveFilterLabels(filters: FlightFilters) {
 }
 
 function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
+  const summaryRef = useRef<HTMLElement>(null)
+  const [summaryHeight, setSummaryHeight] = useState(0)
+  const [compositionOpen, setCompositionOpen] = useState(false)
+  useEffect(() => {
+    const element = summaryRef.current
+    if (!element) return
+    const updateHeight = () => setSummaryHeight(element.getBoundingClientRect().height)
+    updateHeight()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(updateHeight)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   const [filtersButton, setFiltersButton] = useState<HTMLButtonElement | null>(null)
   const [search] = useState(() => {
     try {
@@ -204,6 +217,29 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
       (search?.isOneWay ? 0 : (selectedReturnFlight?.price ?? 0))) *
     payingPassengers
   const formattedTotalPrice = formatPrice(totalPrice)
+  const flightPriceDetails = (
+    <div className="border-b border-[#e1e4e8] pb-3 text-xs">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-sm font-semibold">Авиабилет</span>
+        <strong className="shrink-0 whitespace-nowrap text-sm">{formattedTotalPrice}</strong>
+      </div>
+      {(selectedOutboundFlight || selectedReturnFlight) && (
+        <div className="mt-1.5 space-y-1 text-xs leading-4 text-text-secondary">
+          {selectedOutboundFlight && (
+            <p>
+              Туда: {formatPrice(selectedOutboundFlight.price)} × {payingPassengers}
+            </p>
+          )}
+          {!search?.isOneWay && selectedReturnFlight && (
+            <p>
+              Обратно: {formatPrice(selectedReturnFlight.price)} × {payingPassengers}
+            </p>
+          )}
+          {search?.passengers && <p>{formatFlightPassengers(search.passengers)}</p>}
+        </div>
+      )}
+    </div>
+  )
 
   function handleContinue() {
     if (isOutbound && selectedFlightId !== null && !search?.isOneWay) {
@@ -227,7 +263,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
   }
 
   return (
-    <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
+    <section className="pt-6 pb-4 md:pt-8 lg:pt-10 lg:pb-10">
       <header>
         {isOutbound && (
           <a
@@ -287,13 +323,51 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
                 {getFlightsCountLabel(filteredFlights.length)}
               </h2>
 
-              <span className="inline-flex items-center rounded-full border border-[#dfe3e8] bg-[#f5f6f7] px-3 py-1.5 text-xs leading-4 font-semibold text-text-primary md:text-[13px]">
-                {search
-                  ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin}`
-                  : isOutbound
-                    ? 'Москва → Сочи'
-                    : 'Сочи → Москва'}
-              </span>
+              <div
+                className="flex min-w-0 items-center gap-1.5 text-xs leading-4 font-semibold text-text-primary md:gap-2 md:text-[13px]"
+                aria-label={
+                  search
+                    ? `${isOutbound ? search.origin : search.destination} → ${isOutbound ? search.destination : search.origin}`
+                    : isOutbound
+                      ? 'Москва → Сочи'
+                      : 'Сочи → Москва'
+                }
+              >
+                <span className="truncate">
+                  {search
+                    ? isOutbound
+                      ? search.origin
+                      : search.destination
+                    : isOutbound
+                      ? 'Москва'
+                      : 'Сочи'}
+                </span>
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 76 20"
+                  fill="none"
+                  className="h-5 w-10 shrink-0 sm:w-[76px]"
+                >
+                  <path
+                    d="M5 15C20 15 20 5 38 5S56 15 71 5"
+                    stroke="#b79532"
+                    strokeWidth="1.5"
+                    strokeDasharray="3 4"
+                    strokeLinecap="round"
+                  />
+                  <circle cx="5" cy="15" r="3" fill="#ffdd2d" stroke="#b79532" />
+                  <circle cx="71" cy="5" r="3" fill="#ffdd2d" stroke="#b79532" />
+                </svg>
+                <span className="truncate">
+                  {search
+                    ? isOutbound
+                      ? search.destination
+                      : search.origin
+                    : isOutbound
+                      ? 'Сочи'
+                      : 'Москва'}
+                </span>
+              </div>
             </div>
 
             <div className="relative mt-3 w-fit">
@@ -364,9 +438,16 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
           </div>
         </div>
 
-        <aside className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white py-3 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-2 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]">
-          <div className="mx-auto flex w-[calc(100%_-_36px)] items-center gap-4 md:w-[calc(100%_-_64px)] lg:block lg:w-auto">
+        <aside
+          ref={summaryRef}
+          className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white py-3 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-2 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
+        >
+          <div className="mx-auto w-[calc(100%_-_36px)] md:w-[calc(100%_-_64px)] lg:w-auto">
             <h2 className="hidden text-xl leading-7 font-semibold lg:block">Ваша поездка</h2>
+            <details className="mb-3 lg:hidden" onToggle={(event) => setCompositionOpen(event.currentTarget.open)}>
+              <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
+              {compositionOpen && <div className="mt-3">{flightPriceDetails}</div>}
+            </details>
 
             <div className="mt-3 hidden space-y-2 text-sm lg:block" aria-label="Выбранные рейсы">
               <FlightSummary
@@ -383,30 +464,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
               )}
             </div>
 
-            <div className="mt-4 hidden border-b border-[#e1e4e8] pb-4 text-xs lg:block">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-sm font-semibold">Авиабилет</span>
-                <strong className="shrink-0 whitespace-nowrap text-sm">
-                  {formattedTotalPrice}
-                </strong>
-              </div>
-              {(selectedOutboundFlight || selectedReturnFlight) && (
-                <div className="mt-1.5 space-y-1 text-xs leading-4 text-text-secondary">
-                  {[
-                    selectedOutboundFlight &&
-                      `Туда: ${formatPrice(selectedOutboundFlight.price)} × ${payingPassengers}`,
-                    !search?.isOneWay &&
-                      selectedReturnFlight &&
-                      `Обратно: ${formatPrice(selectedReturnFlight.price)} × ${payingPassengers}`,
-                  ]
-                    .filter(Boolean)
-                    .map((line) => (
-                      <p key={line as string}>{line}</p>
-                    ))}
-                  {search?.passengers && <p>{formatFlightPassengers(search.passengers)}</p>}
-                </div>
-              )}
-            </div>
+            <div className="mt-4 hidden lg:block">{flightPriceDetails}</div>
 
             <div className="flex min-w-0 flex-1 items-center gap-4 lg:mt-3 lg:block">
               <div className="flex min-w-0 flex-1 flex-col items-start justify-center lg:mb-3 lg:flex-row lg:items-center lg:justify-between">
@@ -434,6 +492,7 @@ function FlightSelectionPage({ onComplete }: { onComplete?: () => void }) {
           </div>
         </aside>
       </div>
+      <div aria-hidden="true" className="lg:hidden" style={{ height: summaryHeight }} />
     </section>
   )
 }

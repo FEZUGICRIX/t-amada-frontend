@@ -16,6 +16,7 @@ import { formatTripPeriod, readTripPeriod } from '@/shared/tripPeriodData'
 import { readHotelNights } from '@/shared/tripPeriodData'
 import { FlightPriceRow, HotelRoomsPriceRow, InsurancePriceRow } from '@/shared/TripPriceRows'
 import { getInsurancePrice } from './insurancePrice'
+import SkipStepButton from '@/shared/SkipStepButton'
 
 function InsurancePage() {
   const navigate = useNavigate()
@@ -79,7 +80,40 @@ function InsurancePage() {
     continueTrip()
   }
   return (
-    <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 overflow-hidden"
+      >
+        <svg
+          className="absolute bottom-0 left-0 h-[min(46vh,420px)] w-full"
+          viewBox="0 0 1440 420"
+          preserveAspectRatio="xMidYMax slice"
+          fill="none"
+        >
+          <circle cx="1190" cy="115" r="54" fill="#f8df80" />
+          <path
+            d="M0 300 155 165 255 250 385 118 535 278 660 178 840 326 1015 173 1160 297 1305 150 1440 261V420H0Z"
+            fill="#f2ead2"
+          />
+          <path d="m278 229 107-111 109 116-47-20-24 13-39-38-35 34-25-11Z" fill="#fffdf6" />
+          <path d="m1204 250 101-100 96 86-39-14-19 11-38-34-34 30-22-8Z" fill="#fffdf6" />
+          <path
+            d="M0 340C155 278 260 299 393 347c137 50 274 42 423-7 180-59 326-73 624-7v87H0Z"
+            fill="#dfe9e2"
+          />
+          <path
+            d="M0 382c184-63 316-47 456-9 171 47 305 24 455-11 171-40 324-31 529 18v40H0Z"
+            fill="#ceded5"
+          />
+          <path
+            d="M1045 92c12-9 25-9 37 0m8 11c10-7 20-7 30 0"
+            stroke="#b0a374"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
       {trip.hotel && trip.rooms.length > 0 ? (
         <Link
           to="/hotels/$hotelId/rooms"
@@ -101,13 +135,7 @@ function InsurancePage() {
           <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
             Выберите страховку
           </h1>
-          <button
-            type="button"
-            onClick={skipInsurance}
-            className="text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            Пропустить этап
-          </button>
+          <SkipStepButton onClick={skipInsurance} />
         </div>
         <p className="mt-2 text-sm text-text-secondary">Стоимость указана за всех пассажиров</p>
         <BookingSteps current={2} />

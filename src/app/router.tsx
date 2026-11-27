@@ -11,6 +11,9 @@ import TripReviewPage from '@/pages/trip-review/TripReviewPage'
 import BookingProgressPage from '@/pages/booking-progress/BookingProgressPage'
 import BookingSuccessPage from '@/pages/booking-success/BookingSuccessPage'
 import BookingCancelledPage from '@/pages/booking-cancelled/BookingCancelledPage'
+import MyTripsPage from '@/pages/my-trips/MyTripsPage'
+import PrivacyPage from '@/pages/privacy/PrivacyPage'
+import ErrorPage from '@/pages/error/ErrorPage'
 import { readTransferTrip } from '@/pages/transfer/transferTrip'
 import {
   getRoomCapacity,
@@ -21,7 +24,8 @@ import {
 
 const rootRoute = createRootRoute({
   component: App,
-  notFoundComponent: () => <p className="py-10 text-center">Страница не найдена</p>,
+  notFoundComponent: () => <ErrorPage kind="notFound" />,
+  errorComponent: () => <ErrorPage kind="error" />,
 })
 
 const searchRoute = createRoute({
@@ -62,6 +66,8 @@ const routeTree = rootRoute.addChildren([
   hotelsRoute,
   hotelRoomsRoute,
   insuranceRoute,
+  createRoute({ getParentRoute: () => rootRoute, path: '/trips', component: MyTripsPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: '/privacy', component: PrivacyPage }),
   createRoute({ getParentRoute: () => rootRoute, path: '/review', component: TripReviewPage }),
   createRoute({
     getParentRoute: () => rootRoute,
@@ -98,6 +104,7 @@ const routeTree = rootRoute.addChildren([
 
 export const router = createRouter({
   routeTree,
+  defaultErrorComponent: () => <ErrorPage kind="error" />,
   defaultPreload: 'intent',
   scrollRestoration: true,
 })

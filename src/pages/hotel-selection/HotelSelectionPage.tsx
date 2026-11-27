@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { outboundFlights, returnFlights } from '@/pages/flight-selection/mockFlights'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import HotelCard from './HotelCard'
+import TripBackground from '@/shared/TripBackground'
+import SkipStepButton from '@/shared/SkipStepButton'
 import { hotels, type Hotel } from './hotels'
 import BookingSteps from '@/shared/BookingSteps'
 import HotelFiltersPanel from './HotelFiltersPanel'
@@ -43,6 +45,19 @@ function HotelSelectionPage() {
     Number(filters.freeCancellation) +
     Number(filters.sort !== 'default')
   const loaderRef = useRef<HTMLDivElement>(null)
+  const summaryRef = useRef<HTMLElement>(null)
+  const [summaryHeight, setSummaryHeight] = useState(0)
+  const [compositionOpen, setCompositionOpen] = useState(false)
+  useEffect(() => {
+    const element = summaryRef.current
+    if (!element) return
+    const updateHeight = () => setSummaryHeight(element.getBoundingClientRect().height)
+    updateHeight()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(updateHeight)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
   useEffect(() => {
     const element = loaderRef.current
     if (
@@ -95,8 +110,28 @@ function HotelSelectionPage() {
     value
       ? new Date(`${value}T00:00:00`).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
       : 'дата не выбрана'
+  const composition = (
+    <>
+      <FlightPriceRow />
+      {selectedRooms.length > 0 && <HotelRoomsPriceRow rooms={selectedRooms} nights={nights} />}
+      {selectedRooms.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            sessionStorage.removeItem('selected-room')
+            setTransferRemoved(clearTransfer())
+            setSavedRoom(null)
+          }}
+          className="mt-2 text-sm font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          Убрать отель
+        </button>
+      )}
+    </>
+  )
   return (
-    <section className="pt-6 pb-28 md:pt-8 lg:pt-10 lg:pb-10">
+    <section className="relative isolate pt-6 pb-4 md:pt-8 lg:pt-10 lg:pb-10">
+      <TripBackground />
       <Link
         to="/flights"
         className="mb-4 inline-flex h-10 items-center rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold hover:bg-[#f5f6f7]"
@@ -108,18 +143,14 @@ function HotelSelectionPage() {
           <h1 className="text-[22px] leading-7 font-semibold md:text-[28px] md:leading-9 lg:text-[34px] lg:leading-10">
             Выберите отель
           </h1>
-          <button
-            type="button"
+          <SkipStepButton
             onClick={() => {
               sessionStorage.removeItem('selected-room')
               if (clearTransfer()) sessionStorage.setItem('transfer-removed-notice', '1')
               setSavedRoom(null)
               void navigate({ to: '/insurance' })
             }}
-            className="cursor-pointer text-sm font-semibold text-text-secondary underline hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-2"
-          >
-            Пропустить этап
-          </button>
+          />
         </div>
         <p className="mt-1.5 text-[13px] leading-5 text-text-secondary md:mt-2 md:text-sm">
           {trip.search?.destination || 'Направление не выбрано'} ·{' '}
@@ -228,6 +259,7 @@ function HotelSelectionPage() {
           </div>
         </div>
         <aside
+          ref={summaryRef}
           aria-label="Ваша поездка"
           className="fixed inset-x-0 bottom-0 z-20 border-t border-[#e1e4e8] bg-white p-4 shadow-[0_-6px_20px_rgb(17_17_17_/_8%)] lg:static lg:col-start-2 lg:row-start-2 lg:mt-3 lg:rounded-2xl lg:border lg:p-4 lg:shadow-[0_6px_20px_rgb(17_17_17_/_6%)]"
         >
@@ -237,21 +269,14 @@ function HotelSelectionPage() {
               {selectedHotel?.name}
             </p>
           )}
-          <FlightPriceRow />
-          {selectedRooms.length > 0 && <HotelRoomsPriceRow rooms={selectedRooms} nights={nights} />}
-          {selectedRooms.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                sessionStorage.removeItem('selected-room')
-                setTransferRemoved(clearTransfer())
-                setSavedRoom(null)
-              }}
-              className="mt-2 text-sm font-semibold underline focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              Убрать отель
-            </button>
-          )}
+          <details
+            className="lg:hidden"
+            onToggle={(event) => setCompositionOpen(event.currentTarget.open)}
+          >
+            <summary className="cursor-pointer text-sm font-semibold">Состав поездки</summary>
+            {compositionOpen && composition}
+          </details>
+          <div className="hidden lg:block">{composition}</div>
           <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
             <strong>Итого</strong>
             <strong>
@@ -262,6 +287,7 @@ function HotelSelectionPage() {
           </div>
         </aside>
       </div>
+      <div aria-hidden="true" className="lg:hidden" style={{ height: summaryHeight }} />
       {detailsHotel && (
         <HotelDetailsDialog
           hotel={detailsHotel}
