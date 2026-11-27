@@ -5,7 +5,7 @@ const COUNTER_BUTTON_CLASS_NAME =
   'grid size-8 cursor-pointer place-items-center rounded-full border border-[#e3e5e8] bg-[#f5f6f7] p-0 text-lg leading-none text-text-primary enabled:hover:bg-[#eceef0] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-default disabled:text-[#aeb4bd] disabled:opacity-60'
 
 const CLASS_BUTTON_CLASS_NAME =
-  'min-h-[30px] cursor-pointer rounded-lg border-0 bg-transparent px-3 text-[11px] text-text-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent aria-pressed:bg-background-primary aria-pressed:font-semibold aria-pressed:shadow-[0_1px_4px_rgb(17_17_17_/_12%)]'
+  'min-h-[30px] cursor-pointer rounded-lg border-0 bg-transparent px-3 text-[11px] text-text-primary transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent aria-pressed:font-semibold aria-pressed:shadow-[0_1px_4px_rgb(17_17_17_/_12%)]'
 
 type TravelClass = 'economy' | 'business'
 
@@ -156,7 +156,7 @@ function PassengerSelector({ value, onChange }: PassengerSelectorProps) {
 
         <div className="flex rounded-[10px] bg-[#eef0f2] p-[3px]">
           <button
-            className={CLASS_BUTTON_CLASS_NAME}
+            className={`${CLASS_BUTTON_CLASS_NAME} aria-pressed:bg-background-primary`}
             type="button"
             aria-pressed={value.travelClass === 'economy'}
             onClick={() =>
@@ -170,7 +170,7 @@ function PassengerSelector({ value, onChange }: PassengerSelectorProps) {
           </button>
 
           <button
-            className={CLASS_BUTTON_CLASS_NAME}
+            className={`${CLASS_BUTTON_CLASS_NAME} aria-pressed:bg-[#ffdd2d]`}
             type="button"
             aria-pressed={value.travelClass === 'business'}
             onClick={() =>

@@ -74,7 +74,11 @@ function PassengerDetailsPage() {
     return Boolean(trip.hotel && trip.rooms.length)
   })
   return (
-    <section className="pt-6 pb-10 md:pt-8 lg:pt-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-10 md:pt-8 lg:pt-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 bg-[linear-gradient(to_bottom,white_0%,rgba(255,255,255,0.96)_18%,rgba(255,255,255,0.85)_50%,rgba(255,255,255,0.68)_100%),url('/trip-landscape.png')] bg-cover bg-bottom bg-no-repeat"
+      />
       <Link
         to={hasHotel ? '/transfer' : '/insurance'}
         className="mb-4 inline-flex h-10 items-center rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold text-text-primary no-underline hover:bg-[#f5f6f7] focus-visible:outline-2 focus-visible:outline-offset-2"

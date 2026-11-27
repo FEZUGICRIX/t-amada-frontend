@@ -10,6 +10,13 @@ vi.mock('@tanstack/react-router', () => ({
 
 describe('FlightSelectionPage', () => {
   beforeEach(() => sessionStorage.clear())
+  it('показывает стоимость выбранного рейса в раскрытом составе поездки', async () => {
+    render(<FlightSelectionPage />)
+    fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))
+    const details = screen.getByText('Состав поездки').closest('details')!
+    fireEvent.click(within(details).getByText('Состав поездки'))
+    expect(await within(details).findByText(/Туда: 12 440 ₽/)).toBeInTheDocument()
+  })
   it('показывает цену за билет и рассчитывает итог для взрослых и детей без оплаты младенцев', () => {
     sessionStorage.setItem(
       'trip-search',
@@ -157,7 +164,7 @@ describe('FlightSelectionPage', () => {
         name: 'Выберите рейс обратно',
       }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Сочи → Москва')).toBeInTheDocument()
+    expect(screen.getByLabelText('Сочи → Москва')).toBeInTheDocument()
   })
 
   it('сохраняет фильтры при закрытии и открытии панели', () => {

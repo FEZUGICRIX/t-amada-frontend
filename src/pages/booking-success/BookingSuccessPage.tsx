@@ -8,7 +8,6 @@ import BookingTripDetails from '@/pages/booking-progress/BookingTripDetails'
 function BookingSuccessPage() {
   const [booking] = useState(readBooking)
   const [openedAt] = useState(Date.now)
-  const [showUnavailable, setShowUnavailable] = useState(false)
   if (!booking)
     return (
       <section className="py-10">
@@ -62,7 +61,8 @@ function BookingSuccessPage() {
   const time = (value: number) =>
     new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' }).format(new Date(value))
   return (
-    <section className="py-6 sm:py-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-[200px] sm:pt-10 md:pb-[240px]">
+      <BookingBackground />
       <header className="flex items-start gap-4 border-b border-[#e1e4e8] pb-6 sm:items-center">
         <div
           aria-hidden="true"
@@ -119,20 +119,15 @@ function BookingSuccessPage() {
         >
           На главную
         </Link>
-        <button
-          type="button"
-          onClick={() => setShowUnavailable(true)}
-          className="min-h-11 cursor-pointer rounded-xl bg-accent px-2 sm:px-6 text-sm font-semibold hover:brightness-95"
+        <Link
+          to="/trips"
+          className="flex min-h-11 items-center justify-center rounded-xl bg-accent px-2 sm:px-6 text-sm font-semibold text-text-primary no-underline hover:brightness-95"
         >
           Открыть поездку
-        </button>
+        </Link>
       </div>
-      {showUnavailable && (
-        <p role="status" className="mt-2 text-sm text-text-secondary sm:text-right">
-          Раздел поездки пока недоступен.
-        </p>
-      )}
     </section>
   )
 }
 export default BookingSuccessPage
+import BookingBackground from '@/shared/BookingBackground'

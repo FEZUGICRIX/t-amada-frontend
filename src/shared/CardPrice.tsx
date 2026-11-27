@@ -13,12 +13,14 @@ function CardPrice({
   total?: number | null
   totalLabel?: string
   from?: boolean
-  align?: 'left' | 'right'
+  align?: 'left' | 'right' | 'container'
 }) {
   return (
-    <div className={`min-w-0 ${align === 'right' ? 'text-right' : 'text-left md:text-right'}`}>
+    <div
+      className={`min-w-0 ${align === 'right' ? 'text-right' : align === 'container' ? 'text-left @min-[650px]:text-right' : 'text-left md:text-right'}`}
+    >
       <div
-        className={`flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 ${align === 'right' ? 'justify-end' : 'md:justify-end'}`}
+        className={`flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 ${align === 'right' ? 'justify-end' : align === 'container' ? '@min-[650px]:justify-end' : 'md:justify-end'}`}
       >
         <strong className="whitespace-nowrap text-lg leading-6 text-text-primary">
           {from ? 'от ' : ''}

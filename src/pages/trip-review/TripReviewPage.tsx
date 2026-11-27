@@ -2,6 +2,8 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import formatPrice from '@/pages/flight-selection/formatPrice'
 import type { Flight } from '@/pages/flight-selection/types'
 import type { BookingTrip } from '@/pages/booking-progress/bookingData'
+import { saveBooking } from '@/pages/booking-progress/bookingData'
+import { clearDraft } from '@/pages/my-trips/tripDraft'
 import { getTripFlightPrice } from '@/pages/hotel-selection/tripFlightPrice'
 import { getRoomNightlyTotal } from '@/pages/hotel-selection/roomSelection'
 import {
@@ -28,10 +30,10 @@ function saveDemoBooking(
   total: number,
   trip: BookingTrip,
 ) {
-  sessionStorage.setItem(
-    'demo-booking',
-    JSON.stringify({ services, total, trip, startedAt: Date.now() }),
-  )
+  const booking = { services, total, trip, startedAt: Date.now() }
+  sessionStorage.setItem('demo-booking', JSON.stringify(booking))
+  saveBooking(booking)
+  clearDraft()
 }
 
 function FlightInfo({ flight, date }: { flight: Flight; date?: string | null }) {
@@ -151,7 +153,11 @@ function TripReviewPage() {
     'shrink-0 text-sm font-semibold underline hover:text-text-secondary focus-visible:outline-2 focus-visible:outline-offset-2'
   const cardClass = 'rounded-2xl border border-[#e1e4e8] bg-white p-4 md:p-5'
   return (
-    <section className="pt-6 pb-28 md:pt-8 md:pb-10 lg:pt-10">
+    <section className="relative isolate min-h-[calc(100vh-80px)] pt-6 pb-28 md:pt-8 md:pb-10 lg:pt-10">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 left-1/2 -z-10 w-screen -translate-x-1/2 bg-[linear-gradient(to_bottom,white_0%,rgba(255,255,255,0.96)_18%,rgba(255,255,255,0.85)_50%,rgba(255,255,255,0.68)_100%),url('/trip-landscape.png')] bg-cover bg-bottom bg-no-repeat"
+      />
       <Link
         to="/passengers"
         className="mb-4 inline-flex h-10 items-center rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold hover:bg-[#f5f6f7]"
@@ -263,9 +269,12 @@ function TripReviewPage() {
               </div>
             </article>
           )}
-          <div className="rounded-2xl border border-[#f1d45c] bg-[#fff8d9] p-4 text-sm leading-6 text-[#655000]">
-            <strong>Единое бронирование</strong>
-            <p>Услуги подтверждаются по очереди. При изменении цены потребуется подтверждение.</p>
+          <div className="flex items-start gap-3 px-1 py-2 text-sm leading-6 text-text-primary">
+            <span aria-hidden="true" className="mt-2 size-2 shrink-0 rounded-full bg-[#d1a900]" />
+            <p>
+              <strong className="font-semibold">Единое бронирование. </strong>
+              Услуги подтверждаются по очереди. При изменении цены потребуется подтверждение.
+            </p>
           </div>
         </div>
         <aside className="rounded-2xl border border-[#e1e4e8] bg-white p-4 shadow-sm md:p-5">

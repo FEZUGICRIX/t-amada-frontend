@@ -167,16 +167,53 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
       className="mt-4 w-full rounded-2xl bg-[radial-gradient(circle_at_88%_8%,rgb(255_221_45_/_32%)_0%,transparent_38%),linear-gradient(135deg,#fffdf8_0%,#fff8dc_100%)] px-4 pt-6 pb-4 md:mt-6 md:rounded-3xl md:p-8 lg:mt-8"
       aria-labelledby="trip-search-title"
     >
-      <h1
-        className="m-0 text-2xl leading-6 font-semibold md:text-[32px] md:leading-[38px]"
-        id="trip-search-title"
-      >
-        Соберите поездку целиком
-      </h1>
-
-      <p className="mt-0.5 mb-6 text-[10px] leading-[14px] text-text-secondary md:text-sm md:leading-5">
-        Все нужные услуги — в одном заказе
-      </p>
+      <div className="relative mb-7 flex min-h-[116px] items-center md:min-h-[140px] lg:min-h-[154px]">
+        <div className="relative z-10 min-w-0 xl:pr-[300px]">
+          <h1
+            className="m-0 text-[26px] leading-[1.16] font-semibold tracking-[-0.035em] md:text-[34px] lg:whitespace-nowrap lg:text-[38px] xl:text-[42px]"
+            id="trip-search-title"
+          >
+            Вся поездка начинается{' '}
+            <span className="relative inline-block after:absolute after:inset-x-0 after:bottom-0 after:-z-10 after:h-[0.28em] after:rounded-full after:bg-[#ffdd2d]">
+              здесь
+            </span>
+          </h1>
+          <p className="mt-3 max-w-[480px] text-sm leading-6 text-text-secondary md:text-base">
+            Выберите перелёт, отель и дополнительные услуги в одном заказе
+          </p>
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 xl:block"
+        >
+          <div className="absolute right-0 top-0 h-[112px] w-[240px] rotate-[8deg] rounded-2xl border border-[#eedb8b] bg-[#ffe994]/65"></div>
+          <div className="relative flex h-[112px] w-[240px] -rotate-[4deg] items-center gap-4 rounded-2xl border border-white/90 bg-white/85 px-5 shadow-[0_10px_30px_rgb(121_99_24_/_10%)]">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[#ffdd2d] text-[#2b2613]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-6"
+              >
+                <path d="m22 2-7.5 20-3.2-8.3L3 10.5 22 2Z" />
+                <path d="M11.3 13.7 22 2" />
+              </svg>
+            </span>
+            <span>
+              <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#94844c]">
+                Путешествие
+              </span>
+              <span className="mt-1 block text-base font-semibold text-text-primary">
+                Всё в одном месте
+              </span>
+              <span className="mt-1 block text-xs text-text-secondary">Начните с перелёта</span>
+            </span>
+          </div>
+        </div>
+      </div>
 
       <form className="w-full" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-[1.23fr_1.23fr_1fr_1fr_1.39fr_164px]">

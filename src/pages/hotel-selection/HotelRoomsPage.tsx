@@ -8,6 +8,7 @@ import { getRoomsForHotel, type Room } from './rooms'
 import { getTripFlightPrice } from './tripFlightPrice'
 import { readHotelNights } from '@/shared/tripPeriodData'
 import { FlightPriceRow, HotelRoomsPriceRow } from '@/shared/TripPriceRows'
+import TripBackground from '@/shared/TripBackground'
 import { clearTransfer } from '@/pages/transfer/transferSelection'
 import {
   getRoomCapacity,
@@ -67,7 +68,8 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
   const optionClass = (active: boolean) =>
     `min-h-10 rounded-xl border px-4 text-sm font-semibold ${active ? 'border-[#d6b500] bg-[#fff7cc]' : 'border-[#cfd3d8] bg-white hover:bg-[#f7f8f9]'}`
   return (
-    <section className="pt-6 pb-48 md:pt-8 lg:pt-10 lg:pb-10">
+    <section className="relative isolate pt-6 pb-48 md:pt-8 lg:pt-10 lg:pb-10">
+      <TripBackground />
       <Link
         to="/hotels"
         className="mb-4 inline-flex h-10 items-center rounded-xl border border-[#cfd3d8] px-4 text-sm font-semibold text-text-primary no-underline hover:bg-[#f5f6f7]"
@@ -173,9 +175,23 @@ function HotelRoomsPage({ onContinue }: { onContinue?: () => void }) {
                 <FlightPriceRow />
               </div>
               {selected.length > 0 && !enoughCapacity && (
-                <p role="alert" className="mt-3 text-sm text-red-700">
-                  Недостаточно мест: выбрано {totalCapacity} из {passengerCount}. Добавьте номера.
-                </p>
+                <div
+                  role="alert"
+                  className="mt-3 flex gap-2.5 rounded-xl bg-[#fff7db] px-3 py-2.5 text-sm leading-5 text-[#594600]"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#f5d75e] text-xs font-bold leading-none"
+                  >
+                    !
+                  </span>
+                  <div>
+                    <p className="font-semibold">Недостаточно мест</p>
+                    <p className="mt-0.5 text-xs leading-4">
+                      Выбрано {totalCapacity} из {passengerCount}. Добавьте номера.
+                    </p>
+                  </div>
+                </div>
               )}
               <div className="mt-3 flex items-center justify-between border-t border-[#e1e4e8] pt-3">
                 <strong>Итого</strong>

@@ -57,7 +57,7 @@ describe('Выбор номера', () => {
         name: 'Выбрать',
       }),
     )
-    expect(screen.getByRole('alert')).toHaveTextContent('выбрано 2 из 4')
+    expect(screen.getByRole('alert')).toHaveTextContent('Выбрано 2 из 4')
     fireEvent.click(
       within(screen.getByRole('article', { name: 'Люкс двухместный' })).getByRole('button', {
         name: 'Выбрать',
