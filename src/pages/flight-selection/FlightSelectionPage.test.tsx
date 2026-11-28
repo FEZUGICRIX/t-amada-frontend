@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
@@ -70,10 +71,16 @@ describe('FlightSelectionPage', () => {
     expect(screen.queryByRole('article', { name: 'Рейс Аэрофлот' })).not.toBeInTheDocument()
   })
   it('передаёт параметры поездки в одну сторону на страницу рейсов', () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('[]', { status: 200 }))
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     const { unmount } = render(
-      <TripSearchForm
-        onSearch={(search) => sessionStorage.setItem('trip-search', JSON.stringify(search))}
-      />,
+      <QueryClientProvider client={client}>
+        <TripSearchForm
+          onSearch={(search) => sessionStorage.setItem('trip-search', JSON.stringify(search))}
+        />
+      </QueryClientProvider>,
     )
     fireEvent.change(screen.getByRole('combobox', { name: 'Куда' }), { target: { value: 'Сочи' } })
     fireEvent.click(screen.getByRole('checkbox', { name: 'Билет в одну сторону' }))
@@ -85,6 +92,7 @@ describe('FlightSelectionPage', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Найти билеты' }))
     unmount()
+    fetchSpy.mockRestore()
     render(<FlightSelectionPage />)
     expect(screen.getByText(/Москва → Сочи ·/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('article', { name: 'Рейс Аэрофлот' }))

@@ -1,19 +1,10 @@
 import { useState, type SubmitEvent } from 'react'
+import CityField from './CityField'
 import DatePicker, { type SelectionMode } from './DatePicker'
 import PassengerSelector, { type PassengerSelection } from './PassengerSelector'
+import { useFlightCitiesQuery, type FlightCity } from '@/entities/flight'
 
-const CITY_NAMES = [
-  'Екатеринбург',
-  'Москва',
-  'Санкт-Петербург',
-  'Казань',
-  'Нижний Новгород',
-  'Сочи',
-  'Самара',
-  'Уфа',
-  'Пермь',
-  'Челябинск',
-]
+const EMPTY_CITIES: FlightCity[] = []
 
 const FIELD_CLASS_NAME =
   'flex h-[60px] min-w-0 flex-col items-start justify-center rounded-xl border border-[#e3e5e8] bg-background-primary p-2 text-left text-text-primary focus-within:border-text-primary focus-visible:border-text-primary focus-visible:outline-none md:h-16 md:px-3 md:py-2.5'
@@ -101,6 +92,29 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
       travelClass: 'economy',
     },
   )
+  const [origin, setOrigin] = useState(savedSearch?.origin ?? 'Москва')
+  const [destination, setDestination] = useState(savedSearch?.destination ?? 'Екатеринбург')
+  const [activeCityField, setActiveCityField] = useState<'origin' | 'destination' | null>(null)
+  const [cityQuery, setCityQuery] = useState('')
+  const { data: citiesData, isFetching: isCitiesFetching } = useFlightCitiesQuery(
+    { query: cityQuery },
+    activeCityField !== null,
+  )
+  const cities = citiesData ?? EMPTY_CITIES
+
+  function handleCityFocus(field: 'origin' | 'destination') {
+    setActivePanel(null)
+    setActiveCityField(field)
+    setCityQuery('')
+  }
+
+  function handleCityChange(field: 'origin' | 'destination', nextValue: string) {
+    if (field === 'origin') setOrigin(nextValue)
+    else setDestination(nextValue)
+    setActivePanel(null)
+    setActiveCityField(field)
+    setCityQuery(nextValue)
+  }
 
   function handleSubmit(evt: SubmitEvent<HTMLFormElement>) {
     evt.preventDefault()
@@ -112,14 +126,13 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
       return
     }
     setDateError(false)
-    const form = new FormData(evt.currentTarget)
     const serializeDate = (date: Date | null) =>
       date
         ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
         : null
     onSearch?.({
-      origin: String(form.get('origin') || ''),
-      destination: String(form.get('destination') || ''),
+      origin,
+      destination,
       departureDate: serializeDate(departureDate),
       returnDate: isOneWay ? null : serializeDate(returnDate),
       isOneWay,
@@ -217,31 +230,29 @@ function TripSearchForm({ onSearch }: TripSearchFormProps) {
 
       <form className="w-full" onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-[1.23fr_1.23fr_1fr_1fr_1.39fr_164px]">
-          <label className={FIELD_CLASS_NAME}>
-            <span className={FIELD_LABEL_CLASS_NAME}>Откуда</span>
-            <input
-              className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
-              name="origin"
-              list="trip-cities"
-              defaultValue={savedSearch?.origin ?? 'Москва'}
-            />
-          </label>
+          <CityField
+            label="Откуда"
+            name="origin"
+            value={origin}
+            cities={cities}
+            isFetching={isCitiesFetching}
+            isOpen={activeCityField === 'origin'}
+            onOpen={() => handleCityFocus('origin')}
+            onClose={() => setActiveCityField((prev) => (prev === 'origin' ? null : prev))}
+            onChange={(nextValue) => handleCityChange('origin', nextValue)}
+          />
 
-          <label className={FIELD_CLASS_NAME}>
-            <span className={FIELD_LABEL_CLASS_NAME}>Куда</span>
-            <input
-              className="w-full min-w-0 border-0 bg-transparent p-0 text-xs leading-4 font-semibold text-text-primary outline-0 md:text-sm md:leading-5"
-              name="destination"
-              list="trip-cities"
-              defaultValue={savedSearch?.destination ?? 'Екатеринбург'}
-            />
-          </label>
-
-          <datalist id="trip-cities">
-            {CITY_NAMES.map((cityName) => (
-              <option key={cityName} value={cityName} />
-            ))}
-          </datalist>
+          <CityField
+            label="Куда"
+            name="destination"
+            value={destination}
+            cities={cities}
+            isFetching={isCitiesFetching}
+            isOpen={activeCityField === 'destination'}
+            onOpen={() => handleCityFocus('destination')}
+            onClose={() => setActiveCityField((prev) => (prev === 'destination' ? null : prev))}
+            onChange={(nextValue) => handleCityChange('destination', nextValue)}
+          />
 
           <button
             key={`departure-${dateErrorAttempt}`}
